@@ -99,9 +99,9 @@ export const MatchDetails: React.FC<MatchDetailsProps> = ({ match }) => {
             <h4 style={{ fontSize: '0.8rem', marginBottom: '0.5rem', textTransform: 'uppercase', color: 'var(--text-secondary)', letterSpacing: '1px' }}>Titulares</h4>
             <ul style={{ listStyle: 'none', padding: 0, marginBottom: '1rem', fontSize: '0.9rem' }}>
               {starters.map((p: any) => (
-                <li key={p.athlete.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.2rem 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                  <span>{p.jersey} - {p.athlete.shortName}</span>
-                  <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>{p.position.abbreviation}</span>
+                <li key={p.athlete?.id || Math.random()} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.2rem 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                  <span>{p.jersey} - {p.athlete?.shortName || p.athlete?.displayName || 'Desconocido'}</span>
+                  <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>{p.position?.abbreviation || ''}</span>
                 </li>
               ))}
             </ul>
@@ -113,9 +113,9 @@ export const MatchDetails: React.FC<MatchDetailsProps> = ({ match }) => {
             <h4 style={{ fontSize: '0.8rem', marginBottom: '0.5rem', textTransform: 'uppercase', color: 'var(--text-secondary)', letterSpacing: '1px' }}>Suplentes</h4>
             <ul style={{ listStyle: 'none', padding: 0, fontSize: '0.9rem' }}>
               {subs.map((p: any) => (
-                <li key={p.athlete.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.2rem 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                  <span>{p.jersey} - {p.athlete.shortName}</span>
-                  <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>{p.position.abbreviation}</span>
+                <li key={p.athlete?.id || Math.random()} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.2rem 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                  <span>{p.jersey} - {p.athlete?.shortName || p.athlete?.displayName || 'Desconocido'}</span>
+                  <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>{p.position?.abbreviation || ''}</span>
                 </li>
               ))}
             </ul>
