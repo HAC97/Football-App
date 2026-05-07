@@ -13,7 +13,7 @@ function App() {
   const [matches, setMatches] = useState<Match[]>([]);
   const [loading, setLoading] = useState(true);
   const [favoriteTeamId, setFavoriteTeamId] = useState<string | null>(localStorage.getItem('favTeam'));
-  const [viewMode, setViewMode] = useState<'fixtures' | 'standings'>('fixtures');
+  const [viewMode, setViewMode] = useState<'fixtures' | 'standings' | 'knockout'>('fixtures');
 
   useEffect(() => {
     async function loadData() {
@@ -37,7 +37,9 @@ function App() {
   const handleSelectLeague = (id: string | null) => {
     setActiveLeague(id);
     if (!id) {
-      setViewMode('fixtures'); // Only fixtures for "All matches"
+      setViewMode('fixtures');
+    } else if (viewMode === 'knockout' && id !== 'cl' && id !== 'ucl') {
+      setViewMode('fixtures');
     }
   };
 
@@ -63,11 +65,19 @@ function App() {
     return matches.filter(m => m.homeTeam.id === favoriteTeamId || m.awayTeam.id === favoriteTeamId);
   }, [favoriteTeamId, matches]);
 
+  const isKnockoutMatch = (m: Match) => {
+    const p = m.phase?.toLowerCase() || '';
+    return p.includes('16') || p.includes('quarter') || p.includes('semi') || p.includes('final') || (p.includes('stage') && !p.includes('group'));
+  };
+
+  const knockoutMatches = filteredMatches.filter(isKnockoutMatch);
+
   const liveMatches = filteredMatches.filter(m => m.status === 'LIVE');
   const scheduledMatches = filteredMatches.filter(m => m.status === 'SCHEDULED');
   const finishedMatches = filteredMatches.filter(m => m.status === 'FINISHED');
 
   const selectedLeagueObj = leagues.find(l => l.id === activeLeague);
+  const showKnockoutButton = activeLeague === 'cl' || activeLeague === 'ucl';
 
   return (
     <div className="app-container">
@@ -101,11 +111,35 @@ function App() {
               }}>
               Posiciones
             </button>
+            {showKnockoutButton && (
+              <button 
+                onClick={() => setViewMode('knockout')}
+                style={{ 
+                  background: viewMode === 'knockout' ? 'var(--accent)' : 'rgba(255,255,255,0.05)', 
+                  color: '#fff', border: 'none', padding: '0.75rem 1.5rem', borderRadius: '99px', cursor: 'pointer', fontWeight: 600, transition: '0.2s' 
+                }}>
+                Eliminatorias
+              </button>
+            )}
           </div>
         )}
 
         {viewMode === 'standings' && selectedLeagueObj ? (
           <Standings league={selectedLeagueObj} />
+        ) : viewMode === 'knockout' && selectedLeagueObj ? (
+          knockoutMatches.length > 0 ? (
+            <>
+              {knockoutMatches.filter(m => m.status === 'LIVE').length > 0 && <MatchList title="Eliminatorias - En Vivo" matches={knockoutMatches.filter(m => m.status === 'LIVE')} leagues={leagues} />}
+              {knockoutMatches.filter(m => m.status === 'SCHEDULED').length > 0 && <MatchList title="Eliminatorias - Próximos" matches={knockoutMatches.filter(m => m.status === 'SCHEDULED')} leagues={leagues} />}
+              {knockoutMatches.filter(m => m.status === 'FINISHED').length > 0 && <MatchList title="Eliminatorias - Resultados" matches={knockoutMatches.filter(m => m.status === 'FINISHED')} leagues={leagues} />}
+            </>
+          ) : (
+            <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-secondary)', background: 'rgba(0,0,0,0.2)', borderRadius: 'var(--border-radius-lg)', border: '1px solid rgba(255,255,255,0.05)' }}>
+              <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>🏆</div>
+              <p style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--text-primary)' }}>Aún no hay datos de eliminatorias disponibles.</p>
+              <p style={{ marginTop: '0.5rem' }}>Esta fase del torneo todavía no ha comenzado o no se han programado los partidos oficiales.</p>
+            </div>
+          )
         ) : loading ? (
           <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
             <div style={{ fontSize: '1.5rem', marginBottom: '1rem' }}>⚽</div>

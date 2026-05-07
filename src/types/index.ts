@@ -19,6 +19,7 @@ export interface Match {
   };
   minute?: number;
   clockDisplay?: string;
+  phase?: string;
 }
 
 export interface League {
@@ -41,4 +42,9 @@ export interface StandingTeam {
   goalsFor: number;
   goalsAgainst: number;
   goalDifference: number;
+}
+
+export interface StandingsGroup {
+  name: string;
+  entries: StandingTeam[];
 }

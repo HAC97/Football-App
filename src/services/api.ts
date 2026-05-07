@@ -39,8 +39,17 @@ export async function fetchMatches(dateYYYYMMDD?: string): Promise<Match[]> {
     if (!slug) return [];
 
     let url = `https://site.api.espn.com/apis/site/v2/sports/soccer/${slug}/scoreboard`;
-    if (dateQuery) {
-      url += `?dates=${dateQuery}`;
+    
+    // For Champions League and Libertadores, fetch a much wider range to cover all knockout stages
+    if (slug === 'uefa.champions' || slug === 'conmebol.libertadores') {
+      const today = new Date();
+      const past = new Date(today);
+      past.setMonth(past.getMonth() - 8); // Go back 8 months to catch start of knockouts / groups
+      const future = new Date(today);
+      future.setMonth(future.getMonth() + 4);
+      url += `?dates=${formatDate(past)}-${formatDate(future)}&limit=500`;
+    } else if (dateQuery) {
+      url += `?dates=${dateQuery}&limit=200`;
     }
 
     try {
@@ -109,6 +118,7 @@ export async function fetchMatches(dateYYYYMMDD?: string): Promise<Match[]> {
           score,
           minute: status === 'LIVE' ? event.status.clock : undefined,
           clockDisplay,
+          phase: event.season?.slug || event.competitions?.[0]?.series?.title || '',
         };
       });
     } catch (error) {
@@ -133,33 +143,39 @@ export async function fetchStandings(leagueId: string): Promise<any[]> {
     if (!response.ok) return [];
     
     const data = await response.json();
-    if (!data.children || data.children.length === 0 || !data.children[0].standings) return [];
+    if (!data.children || data.children.length === 0) return [];
 
-    const entries = data.children[0].standings.entries;
-    
-    return entries.map((entry: any) => {
-      const getStat = (name: string) => {
-        const stat = entry.stats.find((s: any) => s.name === name);
-        return stat ? stat.value : 0;
-      };
+    return data.children.map((child: any) => {
+      const entries = child.standings?.entries || [];
+      const formattedEntries = entries.map((entry: any) => {
+        const getStat = (name: string) => {
+          const stat = entry.stats?.find((s: any) => s.name === name);
+          return stat ? stat.value : 0;
+        };
+
+        return {
+          id: entry.team?.id || Math.random().toString(),
+          rank: getStat('rank') || 0,
+          team: {
+            id: entry.team?.id || '',
+            name: entry.team?.displayName || 'Desconocido',
+            shortName: entry.team?.abbreviation || entry.team?.displayName?.substring(0, 3).toUpperCase() || '',
+            logo: entry.team?.logos?.[0]?.href || 'https://via.placeholder.com/40?text=?',
+          },
+          played: getStat('gamesPlayed'),
+          points: getStat('points'),
+          wins: getStat('wins'),
+          draws: getStat('ties'),
+          losses: getStat('losses'),
+          goalsFor: getStat('pointsFor'),
+          goalsAgainst: getStat('pointsAgainst'),
+          goalDifference: getStat('pointDifferential'),
+        };
+      });
 
       return {
-        id: entry.team.id,
-        rank: getStat('rank') || 0,
-        team: {
-          id: entry.team.id,
-          name: entry.team.displayName,
-          shortName: entry.team.abbreviation || entry.team.displayName.substring(0, 3).toUpperCase(),
-          logo: entry.team.logos?.[0]?.href || 'https://via.placeholder.com/40?text=?',
-        },
-        played: getStat('gamesPlayed'),
-        points: getStat('points'),
-        wins: getStat('wins'),
-        draws: getStat('ties'),
-        losses: getStat('losses'),
-        goalsFor: getStat('pointsFor'),
-        goalsAgainst: getStat('pointsAgainst'),
-        goalDifference: getStat('pointDifferential'),
+        name: child.name || 'Tabla General',
+        entries: formattedEntries.sort((a: any, b: any) => a.rank - b.rank)
       };
     });
   } catch (error) {
