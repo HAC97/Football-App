@@ -19,7 +19,15 @@ export interface Match {
   };
   minute?: number;
   clockDisplay?: string;
+  clockSeconds?: number;
+  period?: number;
+  fetchedAt?: number;
   phase?: string;
+  statusDetail?: string;
+  penalties?: {
+    home: number;
+    away: number;
+  };
 }
 
 export interface League {

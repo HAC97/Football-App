@@ -85,6 +85,8 @@ export async function fetchMatches(dateYYYYMMDD?: string): Promise<Match[]> {
         if (espnStatus === 'post') status = 'FINISHED';
         if (espnStatus === 'in') status = 'LIVE';
 
+        const statusDetail = event.status.type.detail;
+
         let score;
         if (status !== 'SCHEDULED') {
           score = {
@@ -93,14 +95,30 @@ export async function fetchMatches(dateYYYYMMDD?: string): Promise<Match[]> {
           };
         }
 
-        let clockDisplay: string | undefined;
+        let penalties: { home: number; away: number } | undefined;
         if (status === 'LIVE' || status === 'FINISHED') {
-          const period = event.status.period;
-          const clock = event.status.clock;
-          if (clock !== undefined && period !== undefined) {
-            const mins = Math.floor(clock / 60);
-            const secs = Math.floor(clock % 60);
-            const periodStr = period === 1 ? '1st' : period === 2 ? '2nd' : period === 3 ? 'ET1' : period === 4 ? 'ET2' : period + 'th';
+          const homePen = homeCompetitor.penaltyScore ?? homeCompetitor.shootoutScore ?? homeCompetitor.shootoutAdvantage;
+          const awayPen = awayCompetitor.penaltyScore ?? awayCompetitor.shootoutScore ?? awayCompetitor.shootoutAdvantage;
+          if (homePen !== undefined || awayPen !== undefined) {
+            penalties = {
+              home: parseInt(homePen, 10) || 0,
+              away: parseInt(awayPen, 10) || 0,
+            };
+          }
+        }
+
+        let clockDisplay: string | undefined;
+        let clockSeconds: number | undefined;
+        let period: number | undefined;
+        if (status === 'LIVE' || status === 'FINISHED') {
+          const espnPeriod = event.status.period;
+          const espnClock = event.status.clock;
+          if (espnClock !== undefined && espnPeriod !== undefined) {
+            clockSeconds = espnClock;
+            period = espnPeriod;
+            const mins = Math.floor(espnClock / 60);
+            const secs = Math.floor(espnClock % 60);
+            const periodStr = espnPeriod === 1 ? '1st' : espnPeriod === 2 ? '2nd' : espnPeriod === 3 ? 'ET1' : espnPeriod === 4 ? 'ET2' : espnPeriod + 'th';
             clockDisplay = `${periodStr} ${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
           } else {
             clockDisplay = event.status.displayClock;
@@ -118,7 +136,12 @@ export async function fetchMatches(dateYYYYMMDD?: string): Promise<Match[]> {
           score,
           minute: status === 'LIVE' ? event.status.clock : undefined,
           clockDisplay,
+          clockSeconds,
+          period,
+          fetchedAt: status === 'LIVE' ? Date.now() : undefined,
           phase: event.season?.slug || event.competitions?.[0]?.series?.title || '',
+          statusDetail,
+          penalties,
         };
       });
     } catch (error) {

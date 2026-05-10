@@ -25,6 +25,23 @@ function App() {
     loadData();
   }, []);
 
+  const hasLiveMatches = useMemo(() => matches.some(m => m.status === 'LIVE'), [matches]);
+
+  useEffect(() => {
+    if (loading || !hasLiveMatches) return;
+
+    const interval = setInterval(async () => {
+      try {
+        const fresh = await fetchMatches();
+        setMatches(fresh);
+      } catch {
+        // silently retry on next interval
+      }
+    }, 15000);
+
+    return () => clearInterval(interval);
+  }, [loading, hasLiveMatches]);
+
   const handleSetFavoriteTeam = (teamId: string | null) => {
     setFavoriteTeamId(teamId);
     if (teamId) {
