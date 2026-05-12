@@ -116,25 +116,38 @@ export const MatchDetails: React.FC<MatchDetailsProps> = ({ match }) => {
   const currentRoster = activeTeam === 'home' ? homeRoster : awayRoster;
   const starters = currentRoster?.roster?.filter((p: any) => p.starter) || [];
   
-  // Try to group by position
-  const gk = starters.filter((p: any) => ['G', 'GK', 'Goalkeeper'].includes(p.position?.abbreviation || p.position?.name));
-  const def = starters.filter((p: any) => ['D', 'DEF', 'Defender', 'CB', 'LB', 'RB'].includes(p.position?.abbreviation || p.position?.name));
-  const mid = starters.filter((p: any) => ['M', 'MID', 'Midfielder', 'CM', 'LM', 'RM', 'AM', 'DM'].includes(p.position?.abbreviation || p.position?.name));
-  const fwd = starters.filter((p: any) => ['F', 'FWD', 'Forward', 'ST', 'LW', 'RW'].includes(p.position?.abbreviation || p.position?.name));
+  const formationString = currentRoster?.formation || "4-4-2";
+  const rowCounts = [1, ...formationString.split('-').map(Number)]; // e.g., [1, 4, 4, 2]
+  
+  const formationRows: any[][] = [];
+  let currentIndex = 0;
+  for (const count of rowCounts) {
+    const rowPlayers = starters.slice(currentIndex, currentIndex + count);
+    
+    // Sort horizontally: Left -> Center -> Right
+    rowPlayers.sort((a: any, b: any) => {
+      const getVal = (p: any) => {
+        const name = (p.position?.name || p.position?.displayName || '').toLowerCase();
+        if (name.includes('left')) return 1;
+        if (name.includes('right')) return 3;
+        return 2; // Center or unspecified
+      };
+      return getVal(a) - getVal(b);
+    });
+    
+    formationRows.push(rowPlayers);
+    currentIndex += count;
+  }
 
-  // If grouping failed (e.g. unexpected abbreviations), fallback to typical 1-4-4-2 order slicing
-  const useFallback = gk.length + def.length + mid.length + fwd.length !== starters.length && starters.length > 0;
-  const renderGk = useFallback ? starters.slice(0, 1) : gk;
-  const renderDef = useFallback ? starters.slice(1, 5) : def;
-  const renderMid = useFallback ? starters.slice(5, 9) : mid;
-  const renderFwd = useFallback ? starters.slice(9) : fwd;
+  // Reverse so Attackers are at the top, Goalkeeper at the bottom
+  const renderRows = formationRows.reverse();
 
   return (
     <div style={{ display: 'grid', gridTemplateColumns: hasLineups && (hasStats || hasEvents) ? '1fr 1fr' : '1fr', gap: '1.5rem', padding: '1.5rem', background: 'var(--bg-dark)', borderTop: '1px solid rgba(255,255,255,0.05)', borderRadius: '0 0 var(--border-radius-lg) var(--border-radius-lg)' }}>
       
       {/* Left Column: Pitch / Lineup */}
       {hasLineups && (
-        <div style={{ position: 'relative', background: '#1c2420', borderRadius: '16px', overflow: 'hidden', minHeight: '500px', display: 'flex', flexDirection: 'column', border: '1px solid rgba(255,255,255,0.05)' }}>
+        <div style={{ position: 'relative', background: '#1c2420', borderRadius: '16px', overflow: 'hidden', minHeight: '550px', display: 'flex', flexDirection: 'column', border: '1px solid rgba(255,255,255,0.05)' }}>
           <div style={{ padding: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(0,0,0,0.3)', position: 'relative', zIndex: 2 }}>
             <div style={{ display: 'flex', gap: '0.5rem', background: 'rgba(0,0,0,0.5)', padding: '0.25rem', borderRadius: '99px' }}>
               <button 
@@ -163,44 +176,26 @@ export const MatchDetails: React.FC<MatchDetailsProps> = ({ match }) => {
             <div style={{ position: 'absolute', top: '-10px', left: '50%', transform: 'translateX(-50%)', width: '150px', height: '80px', border: '2px solid rgba(255,255,255,0.2)' }} />
             <div style={{ position: 'absolute', bottom: '-10px', left: '50%', transform: 'translateX(-50%)', width: '150px', height: '80px', border: '2px solid rgba(255,255,255,0.2)' }} />
             
-            {/* Players on Pitch */}
-            <div style={{ position: 'absolute', width: '100%', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-around', padding: '2rem 0', zIndex: 1 }}>
-              {/* Forwards */}
-              <div style={{ display: 'flex', justifyContent: 'center', gap: renderFwd.length > 2 ? '1rem' : '4rem' }}>
-                {renderFwd.map((p: any) => (
-                  <div key={p.athlete?.id || Math.random()} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.25rem', width: '60px' }}>
-                    <div style={{ width: '28px', height: '28px', background: 'var(--green)', borderRadius: '50%', border: '2px solid #fff', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#132F20', fontSize: '0.75rem', fontWeight: 'bold' }}>{p.jersey}</div>
-                    <span style={{ fontSize: '0.65rem', background: 'rgba(0,0,0,0.6)', padding: '2px 4px', borderRadius: '4px', textAlign: 'center', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden', maxWidth: '100%' }}>{p.athlete?.shortName || p.athlete?.displayName}</span>
+            {/* Dynamic Players on Pitch */}
+            <div style={{ position: 'absolute', width: '100%', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-evenly', padding: '2rem 0', zIndex: 1 }}>
+              {renderRows.map((row, rowIdx) => {
+                if (row.length === 0) return null;
+                const isGk = rowIdx === renderRows.length - 1; // GK is always the last row after reverse
+                return (
+                  <div key={`row-${rowIdx}`} style={{ display: 'flex', justifyContent: 'center', gap: row.length > 3 ? '0.5rem' : '2rem', width: '100%', padding: '0 1rem' }}>
+                    {row.map((p: any) => (
+                      <div key={p.athlete?.id || Math.random()} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.25rem', width: '60px' }}>
+                        <div style={{ width: '28px', height: '28px', background: isGk ? '#3b82f6' : 'var(--green)', borderRadius: '50%', border: '2px solid #fff', display: 'flex', alignItems: 'center', justifyContent: 'center', color: isGk ? '#fff' : '#132F20', fontSize: '0.75rem', fontWeight: 'bold' }}>
+                          {p.jersey}
+                        </div>
+                        <span style={{ fontSize: '0.65rem', background: 'rgba(0,0,0,0.6)', padding: '2px 4px', borderRadius: '4px', textAlign: 'center', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden', maxWidth: '100%' }}>
+                          {p.athlete?.shortName || p.athlete?.displayName}
+                        </span>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-              {/* Midfielders */}
-              <div style={{ display: 'flex', justifyContent: 'space-evenly', padding: '0 1rem' }}>
-                {renderMid.map((p: any) => (
-                  <div key={p.athlete?.id || Math.random()} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.25rem', width: '60px' }}>
-                    <div style={{ width: '28px', height: '28px', background: 'var(--green)', borderRadius: '50%', border: '2px solid #fff', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#132F20', fontSize: '0.75rem', fontWeight: 'bold' }}>{p.jersey}</div>
-                    <span style={{ fontSize: '0.65rem', background: 'rgba(0,0,0,0.6)', padding: '2px 4px', borderRadius: '4px', textAlign: 'center', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden', maxWidth: '100%' }}>{p.athlete?.shortName || p.athlete?.displayName}</span>
-                  </div>
-                ))}
-              </div>
-              {/* Defenders */}
-              <div style={{ display: 'flex', justifyContent: 'space-evenly', padding: '0 1rem' }}>
-                {renderDef.map((p: any) => (
-                  <div key={p.athlete?.id || Math.random()} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.25rem', width: '60px' }}>
-                    <div style={{ width: '28px', height: '28px', background: 'var(--green)', borderRadius: '50%', border: '2px solid #fff', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#132F20', fontSize: '0.75rem', fontWeight: 'bold' }}>{p.jersey}</div>
-                    <span style={{ fontSize: '0.65rem', background: 'rgba(0,0,0,0.6)', padding: '2px 4px', borderRadius: '4px', textAlign: 'center', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden', maxWidth: '100%' }}>{p.athlete?.shortName || p.athlete?.displayName}</span>
-                  </div>
-                ))}
-              </div>
-              {/* Goalkeeper */}
-              <div style={{ display: 'flex', justifyContent: 'center' }}>
-                {renderGk.map((p: any) => (
-                  <div key={p.athlete?.id || Math.random()} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.25rem', width: '60px' }}>
-                    <div style={{ width: '28px', height: '28px', background: '#3b82f6', borderRadius: '50%', border: '2px solid #fff', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '0.75rem', fontWeight: 'bold' }}>{p.jersey}</div>
-                    <span style={{ fontSize: '0.65rem', background: 'rgba(0,0,0,0.6)', padding: '2px 4px', borderRadius: '4px', textAlign: 'center', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden', maxWidth: '100%' }}>{p.athlete?.shortName || p.athlete?.displayName}</span>
-                  </div>
-                ))}
-              </div>
+                );
+              })}
             </div>
           </div>
         </div>
