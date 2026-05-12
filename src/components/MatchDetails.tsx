@@ -36,7 +36,6 @@ const translateEvent = (ev: any): string => {
     case 'var':
       return `🖥️ VAR: ${ev.text}`;
     default:
-      // Basic fallback translations
       let text = ev.shortText || ev.text || '';
       text = text.replace(/Yellow Card/i, 'Tarjeta Amarilla');
       text = text.replace(/Red Card/i, 'Tarjeta Roja');
@@ -49,6 +48,7 @@ const translateEvent = (ev: any): string => {
 export const MatchDetails: React.FC<MatchDetailsProps> = ({ match }) => {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [activeTeam, setActiveTeam] = useState<'home' | 'away'>('home');
 
   useEffect(() => {
     async function fetchDetails() {
@@ -65,95 +65,200 @@ export const MatchDetails: React.FC<MatchDetailsProps> = ({ match }) => {
     fetchDetails();
   }, [match]);
 
-  if (loading) return <div style={{ padding: '1.5rem', textAlign: 'center', background: 'rgba(0,0,0,0.2)' }}>Cargando formaciones y eventos...</div>;
+  if (loading) {
+    return <div style={{ padding: '2rem', textAlign: 'center', background: 'rgba(0,0,0,0.2)', color: 'var(--text-secondary)' }}>Cargando datos del partido...</div>;
+  }
+
   if (!data) return null;
 
   const rosters = data.rosters;
   const keyEvents = data.keyEvents;
-
   const hasLineups = rosters && rosters.length >= 2 && rosters[0].roster && rosters[0].roster.length > 0;
+  
+  let statsList: any[] = [];
+  if (data?.boxscore?.statistics && data.boxscore.statistics.length > 0) {
+    const s = data.boxscore.statistics[0].statistics;
+    if (s && s.length > 0) {
+      statsList = s.map((stat: any) => {
+        let h = parseInt(stat.displayValue) || 0;
+        let a = parseInt(stat.displayValue) || 0;
+        if (stat.displayValue && stat.displayValue.includes('-')) {
+            const parts = stat.displayValue.split('-');
+            h = parseInt(parts[0]);
+            a = parseInt(parts[1]);
+        }
+        const total = h + a || 1;
+        return {
+          label: stat.text || stat.name,
+          home: h.toString(),
+          away: a.toString(),
+          homeVal: (h / total) * 100,
+          awayVal: (a / total) * 100
+        };
+      });
+    }
+  }
+
+  const hasStats = statsList.length > 0;
+  const hasEvents = keyEvents && keyEvents.length > 0;
+
+  if (!hasLineups && !hasStats && !hasEvents) {
+    return (
+      <div style={{ padding: '2rem', textAlign: 'center', background: 'rgba(0,0,0,0.2)', color: 'var(--text-secondary)' }}>
+        No hay datos disponibles para este partido todavía.
+      </div>
+    );
+  }
 
   const homeRoster = hasLineups ? (rosters.find((r: any) => r.homeAway === 'home') || rosters[0]) : null;
   const awayRoster = hasLineups ? (rosters.find((r: any) => r.homeAway === 'away') || rosters[1]) : null;
 
-  const renderTeam = (roster: any) => {
-    if (!roster || !roster.roster) return null;
-    const starters = roster.roster.filter((p: any) => p.starter);
-    const subs = roster.roster.filter((p: any) => !p.starter);
+  const currentRoster = activeTeam === 'home' ? homeRoster : awayRoster;
+  const starters = currentRoster?.roster?.filter((p: any) => p.starter) || [];
+  
+  // Try to group by position
+  const gk = starters.filter((p: any) => ['G', 'GK', 'Goalkeeper'].includes(p.position?.abbreviation || p.position?.name));
+  const def = starters.filter((p: any) => ['D', 'DEF', 'Defender', 'CB', 'LB', 'RB'].includes(p.position?.abbreviation || p.position?.name));
+  const mid = starters.filter((p: any) => ['M', 'MID', 'Midfielder', 'CM', 'LM', 'RM', 'AM', 'DM'].includes(p.position?.abbreviation || p.position?.name));
+  const fwd = starters.filter((p: any) => ['F', 'FWD', 'Forward', 'ST', 'LW', 'RW'].includes(p.position?.abbreviation || p.position?.name));
 
-    if (starters.length === 0 && subs.length === 0) {
-      return (
-        <div style={{ flex: 1, textAlign: 'center', color: 'var(--text-secondary)', padding: '1rem' }}>
-          Sin datos de jugadores
-        </div>
-      );
-    }
-
-    return (
-      <div style={{ flex: 1 }}>
-        <h3 style={{ marginBottom: '0.5rem', fontSize: '1.1rem' }}>{roster.team.displayName}</h3>
-        <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>Formación: {roster.formation || 'N/D'}</p>
-        
-        {starters.length > 0 && (
-          <>
-            <h4 style={{ fontSize: '0.8rem', marginBottom: '0.5rem', textTransform: 'uppercase', color: 'var(--text-secondary)', letterSpacing: '1px' }}>Titulares</h4>
-            <ul style={{ listStyle: 'none', padding: 0, marginBottom: '1rem', fontSize: '0.9rem' }}>
-              {starters.map((p: any) => (
-                <li key={p.athlete?.id || Math.random()} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.2rem 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                  <span>{p.jersey} - {p.athlete?.shortName || p.athlete?.displayName || 'Desconocido'}</span>
-                  <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>{p.position?.abbreviation || ''}</span>
-                </li>
-              ))}
-            </ul>
-          </>
-        )}
-
-        {subs.length > 0 && (
-          <>
-            <h4 style={{ fontSize: '0.8rem', marginBottom: '0.5rem', textTransform: 'uppercase', color: 'var(--text-secondary)', letterSpacing: '1px' }}>Suplentes</h4>
-            <ul style={{ listStyle: 'none', padding: 0, fontSize: '0.9rem' }}>
-              {subs.map((p: any) => (
-                <li key={p.athlete?.id || Math.random()} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.2rem 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                  <span>{p.jersey} - {p.athlete?.shortName || p.athlete?.displayName || 'Desconocido'}</span>
-                  <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>{p.position?.abbreviation || ''}</span>
-                </li>
-              ))}
-            </ul>
-          </>
-        )}
-      </div>
-    );
-  };
+  // If grouping failed (e.g. unexpected abbreviations), fallback to typical 1-4-4-2 order slicing
+  const useFallback = gk.length + def.length + mid.length + fwd.length !== starters.length && starters.length > 0;
+  const renderGk = useFallback ? starters.slice(0, 1) : gk;
+  const renderDef = useFallback ? starters.slice(1, 5) : def;
+  const renderMid = useFallback ? starters.slice(5, 9) : mid;
+  const renderFwd = useFallback ? starters.slice(9) : fwd;
 
   return (
-    <div style={{ padding: '1.5rem', background: 'rgba(0,0,0,0.3)', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+    <div style={{ display: 'grid', gridTemplateColumns: hasLineups && (hasStats || hasEvents) ? '1fr 1fr' : '1fr', gap: '1.5rem', padding: '1.5rem', background: 'var(--bg-dark)', borderTop: '1px solid rgba(255,255,255,0.05)', borderRadius: '0 0 var(--border-radius-lg) var(--border-radius-lg)' }}>
       
-      {!hasLineups ? (
-        <div style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: '1rem 0' }}>
-          La formación de este partido aún no está disponible.
-        </div>
-      ) : (
-        <div style={{ display: 'flex', gap: '2rem' }}>
-          {renderTeam(homeRoster)}
-          <div style={{ width: '1px', background: 'rgba(255,255,255,0.1)' }} />
-          {renderTeam(awayRoster)}
+      {/* Left Column: Pitch / Lineup */}
+      {hasLineups && (
+        <div style={{ position: 'relative', background: '#1c2420', borderRadius: '16px', overflow: 'hidden', minHeight: '500px', display: 'flex', flexDirection: 'column', border: '1px solid rgba(255,255,255,0.05)' }}>
+          <div style={{ padding: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(0,0,0,0.3)', position: 'relative', zIndex: 2 }}>
+            <div style={{ display: 'flex', gap: '0.5rem', background: 'rgba(0,0,0,0.5)', padding: '0.25rem', borderRadius: '99px' }}>
+              <button 
+                onClick={() => setActiveTeam('home')}
+                style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: activeTeam === 'home' ? 'var(--green)' : 'transparent', color: '#fff', border: 'none', padding: '0.5rem 1rem', borderRadius: '99px', cursor: 'pointer', transition: 'background 0.2s', fontWeight: 600, fontSize: '0.85rem' }}
+              >
+                {match.homeTeam.shortName || match.homeTeam.name}
+                <img src={match.homeTeam.logo} alt="" style={{ width: '16px', height: '16px' }} />
+              </button>
+              <button 
+                onClick={() => setActiveTeam('away')}
+                style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: activeTeam === 'away' ? 'var(--green)' : 'transparent', color: '#fff', border: 'none', padding: '0.5rem 1rem', borderRadius: '99px', cursor: 'pointer', transition: 'background 0.2s', fontWeight: 600, fontSize: '0.85rem' }}
+              >
+                {match.awayTeam.shortName || match.awayTeam.name}
+                <img src={match.awayTeam.logo} alt="" style={{ width: '16px', height: '16px' }} />
+              </button>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>Formación: {currentRoster?.formation || 'N/D'}</span>
+            </div>
+          </div>
+
+          <div style={{ flex: 1, position: 'relative', opacity: 0.9, display: 'flex', flexDirection: 'column', padding: '1rem 0' }}>
+            <div style={{ position: 'absolute', top: '50%', left: '0', width: '100%', height: '2px', background: 'rgba(255,255,255,0.2)' }} />
+            <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '80px', height: '80px', borderRadius: '50%', border: '2px solid rgba(255,255,255,0.2)' }} />
+            <div style={{ position: 'absolute', top: '-10px', left: '50%', transform: 'translateX(-50%)', width: '150px', height: '80px', border: '2px solid rgba(255,255,255,0.2)' }} />
+            <div style={{ position: 'absolute', bottom: '-10px', left: '50%', transform: 'translateX(-50%)', width: '150px', height: '80px', border: '2px solid rgba(255,255,255,0.2)' }} />
+            
+            {/* Players on Pitch */}
+            <div style={{ position: 'absolute', width: '100%', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-around', padding: '2rem 0', zIndex: 1 }}>
+              {/* Forwards */}
+              <div style={{ display: 'flex', justifyContent: 'center', gap: renderFwd.length > 2 ? '1rem' : '4rem' }}>
+                {renderFwd.map((p: any) => (
+                  <div key={p.athlete?.id || Math.random()} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.25rem', width: '60px' }}>
+                    <div style={{ width: '28px', height: '28px', background: 'var(--green)', borderRadius: '50%', border: '2px solid #fff', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#132F20', fontSize: '0.75rem', fontWeight: 'bold' }}>{p.jersey}</div>
+                    <span style={{ fontSize: '0.65rem', background: 'rgba(0,0,0,0.6)', padding: '2px 4px', borderRadius: '4px', textAlign: 'center', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden', maxWidth: '100%' }}>{p.athlete?.shortName || p.athlete?.displayName}</span>
+                  </div>
+                ))}
+              </div>
+              {/* Midfielders */}
+              <div style={{ display: 'flex', justifyContent: 'space-evenly', padding: '0 1rem' }}>
+                {renderMid.map((p: any) => (
+                  <div key={p.athlete?.id || Math.random()} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.25rem', width: '60px' }}>
+                    <div style={{ width: '28px', height: '28px', background: 'var(--green)', borderRadius: '50%', border: '2px solid #fff', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#132F20', fontSize: '0.75rem', fontWeight: 'bold' }}>{p.jersey}</div>
+                    <span style={{ fontSize: '0.65rem', background: 'rgba(0,0,0,0.6)', padding: '2px 4px', borderRadius: '4px', textAlign: 'center', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden', maxWidth: '100%' }}>{p.athlete?.shortName || p.athlete?.displayName}</span>
+                  </div>
+                ))}
+              </div>
+              {/* Defenders */}
+              <div style={{ display: 'flex', justifyContent: 'space-evenly', padding: '0 1rem' }}>
+                {renderDef.map((p: any) => (
+                  <div key={p.athlete?.id || Math.random()} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.25rem', width: '60px' }}>
+                    <div style={{ width: '28px', height: '28px', background: 'var(--green)', borderRadius: '50%', border: '2px solid #fff', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#132F20', fontSize: '0.75rem', fontWeight: 'bold' }}>{p.jersey}</div>
+                    <span style={{ fontSize: '0.65rem', background: 'rgba(0,0,0,0.6)', padding: '2px 4px', borderRadius: '4px', textAlign: 'center', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden', maxWidth: '100%' }}>{p.athlete?.shortName || p.athlete?.displayName}</span>
+                  </div>
+                ))}
+              </div>
+              {/* Goalkeeper */}
+              <div style={{ display: 'flex', justifyContent: 'center' }}>
+                {renderGk.map((p: any) => (
+                  <div key={p.athlete?.id || Math.random()} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.25rem', width: '60px' }}>
+                    <div style={{ width: '28px', height: '28px', background: '#3b82f6', borderRadius: '50%', border: '2px solid #fff', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '0.75rem', fontWeight: 'bold' }}>{p.jersey}</div>
+                    <span style={{ fontSize: '0.65rem', background: 'rgba(0,0,0,0.6)', padding: '2px 4px', borderRadius: '4px', textAlign: 'center', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden', maxWidth: '100%' }}>{p.athlete?.shortName || p.athlete?.displayName}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
-      {keyEvents && keyEvents.length > 0 && (
-        <div style={{ marginTop: hasLineups ? '2rem' : '0' }}>
-          <h4 style={{ fontSize: '0.9rem', marginBottom: '1rem', textTransform: 'uppercase', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.5rem', letterSpacing: '1px' }}>Eventos Destacados</h4>
-          <ul style={{ listStyle: 'none', padding: 0, fontSize: '0.9rem' }}>
-            {keyEvents.map((ev: any) => {
-              if (!ev.clock || !ev.clock.displayValue) return null; // skip events without a clock (like generic notices)
-              return (
-                <li key={ev.id} style={{ padding: '0.5rem 0', display: 'flex', gap: '1rem', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                  <span style={{ color: 'var(--accent)', fontWeight: 'bold', width: '50px' }}>{ev.clock.displayValue}</span>
-                  <span>{translateEvent(ev)}</span>
-                </li>
-              );
-            })}
-          </ul>
+      {/* Right Column: Stats & Events */}
+      {(hasStats || hasEvents) && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          
+          {hasStats && (
+            <div style={{ background: 'var(--bg-card)', borderRadius: '24px', padding: '1.5rem' }}>
+              <div style={{ display: 'flex', gap: '1.5rem', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '1rem', marginBottom: '1.5rem', fontSize: '0.9rem' }}>
+                <span style={{ color: 'var(--green)', fontWeight: 600, position: 'relative' }}>
+                  Estadísticas
+                  <div style={{ position: 'absolute', bottom: '-17px', left: 0, width: '100%', height: '2px', background: 'var(--green)' }} />
+                </span>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                {statsList.map((stat, idx) => (
+                  <div key={idx} style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', fontWeight: 600 }}>
+                      <span style={{ color: stat.homeVal > stat.awayVal ? 'var(--green)' : 'var(--text-primary)' }}>{stat.home}</span>
+                      <span style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', fontWeight: 500, textTransform: 'capitalize' }}>{stat.label}</span>
+                      <span style={{ color: stat.awayVal > stat.homeVal ? '#3b82f6' : 'var(--text-primary)' }}>{stat.away}</span>
+                    </div>
+                    <div style={{ display: 'flex', gap: '4px', height: '4px' }}>
+                      <div style={{ flex: stat.homeVal, background: stat.homeVal > 0 ? 'var(--green)' : 'transparent', borderRadius: '99px 0 0 99px' }} />
+                      <div style={{ flex: stat.awayVal, background: stat.awayVal > 0 ? '#3b82f6' : 'transparent', borderRadius: '0 99px 99px 0' }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {hasEvents && (
+            <div style={{ background: 'var(--bg-card)', borderRadius: '24px', padding: '1.5rem' }}>
+              <div style={{ display: 'flex', gap: '1.5rem', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '1rem', marginBottom: '1.5rem', fontSize: '0.9rem' }}>
+                <span style={{ color: 'var(--green)', fontWeight: 600, position: 'relative' }}>
+                  Eventos
+                  <div style={{ position: 'absolute', bottom: '-17px', left: 0, width: '100%', height: '2px', background: 'var(--green)' }} />
+                </span>
+              </div>
+              <ul style={{ listStyle: 'none', padding: 0, margin: 0, fontSize: '0.9rem' }}>
+                {keyEvents.map((ev: any) => {
+                  if (!ev.clock || !ev.clock.displayValue) return null;
+                  return (
+                    <li key={ev.id} style={{ padding: '0.5rem 0', display: 'flex', gap: '1rem', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                      <span style={{ color: 'var(--accent)', fontWeight: 'bold', width: '50px' }}>{ev.clock.displayValue}</span>
+                      <span>{translateEvent(ev)}</span>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          )}
+          
         </div>
       )}
     </div>

@@ -1,12 +1,12 @@
 import type { League, Match, Team } from '../types';
 
 export const leagues: League[] = [
-  { id: 'arg', name: 'Liga Profesional', country: 'Argentina', logo: '🇦🇷', color: '#43a1d5' },
-  { id: 'pl', name: 'Premier League', country: 'England', logo: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', color: '#3d195b' },
-  { id: 'sa', name: 'Serie A', country: 'Italy', logo: '🇮🇹', color: '#004b96' },
-  { id: 'll', name: 'LaLiga', country: 'Spain', logo: '🇪🇸', color: '#ff4b44' },
+  { id: 'arg', name: 'Liga Profesional', country: 'Argentina', logo: '🏆', color: '#43a1d5' },
+  { id: 'pl', name: 'Premier League', country: 'England', logo: '🦁', color: '#3d195b' },
+  { id: 'sa', name: 'Serie A', country: 'Italy', logo: '🛡️', color: '#004b96' },
+  { id: 'll', name: 'LaLiga', country: 'Spain', logo: '⚽', color: '#ff4b44' },
   { id: 'lib', name: 'Copa Libertadores', country: 'South America', logo: '🌎', color: '#c49a45' },
-  { id: 'ucl', name: 'Champions League', country: 'Europe', logo: '🌍', color: '#002554' },
+  { id: 'ucl', name: 'Champions League', country: 'Europe', logo: '⭐', color: '#002554' },
 ];
 
 const teamsByLeague: Record<string, Team[]> = {

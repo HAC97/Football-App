@@ -7,9 +7,10 @@ interface MatchListProps {
   matches: Match[];
   leagues: League[];
   title: string;
+  onSelectMatch?: (match: Match) => void;
 }
 
-export const MatchList: React.FC<MatchListProps> = ({ matches, leagues, title }) => {
+export const MatchList: React.FC<MatchListProps> = ({ matches, leagues, title, onSelectMatch }) => {
   if (matches.length === 0) {
     return (
       <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
@@ -31,7 +32,8 @@ export const MatchList: React.FC<MatchListProps> = ({ matches, leagues, title })
                 key={match.id} 
                 match={match} 
                 league={league} 
-                index={index} 
+                index={index}
+                onClick={() => onSelectMatch && onSelectMatch(match)}
               />
             );
           })}
