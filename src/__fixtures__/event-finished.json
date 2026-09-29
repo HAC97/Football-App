@@ -1,0 +1,47 @@
+{
+ "id": "401882858",
+ "date": "2026-09-20T19:00Z",
+ "season": {
+  "slug": "2026-27-laliga"
+ },
+ "status": {
+  "clock": 5400,
+  "displayClock": "90'+7'",
+  "period": 2,
+  "type": {
+   "name": "STATUS_FULL_TIME",
+   "state": "post",
+   "detail": "FT",
+   "shortDetail": "FT"
+  }
+ },
+ "competitions": [
+  {
+   "venue": {
+    "fullName": "Mestalla Stadium"
+   },
+   "competitors": [
+    {
+     "homeAway": "home",
+     "score": "2",
+     "team": {
+      "id": "94",
+      "displayName": "Valencia",
+      "abbreviation": "VAL",
+      "logo": "https://a.espncdn.com/i/teamlogos/soccer/500/94.png"
+     }
+    },
+    {
+     "homeAway": "away",
+     "score": "3",
+     "team": {
+      "id": "89",
+      "displayName": "Real Sociedad",
+      "abbreviation": "RSO",
+      "logo": "https://a.espncdn.com/i/teamlogos/soccer/500/89.png"
+     }
+    }
+   ]
+  }
+ ]
+}

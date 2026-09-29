@@ -1,73 +1,59 @@
-# React + TypeScript + Vite
+# Fulltime
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Resultados, partidos en vivo, alineaciones, estadísticas y tablas de posiciones de seis competencias:
+Liga Profesional (Argentina), Premier League, Serie A, LaLiga, Copa Libertadores y Champions League.
+Los datos vienen de la API pública de ESPN, sin clave ni backend.
 
-Currently, two official plugins are available:
+React 19 + TypeScript + Vite. Sin librería de UI: CSS propio con tokens (tema oscuro y claro).
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Uso
 
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+| Comando | Qué hace |
+| --- | --- |
+| `npm run dev` | Servidor de desarrollo |
+| `npm run build` | Chequeo de tipos y build de producción |
+| `npm run lint` | ESLint |
+| `npm test` | Tests unitarios (offline, ~1 s) |
+| `npm run eval` | Evals contra la API real de ESPN (necesita red, ~15 s) |
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Qué hace la app
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+- **Partido destacado**: el que está en vivo; si no hay, el próximo; si no, el último resultado.
+- **Tira de días** (7 atrás, 14 adelante) con punto en los días con partidos y punto rojo si hay uno en vivo. Al abrir, elige hoy o el día más cercano con partidos.
+- **Filtros** por liga y por estado (en vivo, próximos, finalizados). La liga y el tema se recuerdan.
+- **Reloj en vivo** que avanza cada segundo entre consultas; consulta solo los partidos de hoy cada 30 s y solo mientras haya algo en vivo y la pestaña esté visible.
+- **Detalle del partido**: resumen con goles, tarjetas y cambios; alineaciones dibujadas en la cancha con suplentes; estadísticas comparadas.
+- **Posiciones** con zonas de clasificación (colores de ESPN) y grupos donde corresponde.
+- **Móvil**: chips de ligas arriba y pestañas Partidos / Tabla abajo.
+
+## Estructura
+
+```
+src/
+  config/leagues.ts     ligas y sus slugs de ESPN
+  services/espn.ts      cliente de ESPN: tipos crudos, normalizadores y fetch
+  lib/                  lógica pura y testeada: fechas, estado del partido, resumen/alineaciones
+  hooks/                useMatches (carga + polling), useFetch (sin respuestas viejas), useNow
+  components/           UI
+  styles/               base.css (tokens) y app.css
+  __fixtures__/         respuestas reales de ESPN recortadas, usadas por los tests
+evals/espn.eval.ts      contrato contra la API real
+```
+
+## Notas sobre la API de ESPN
+
+- **Los rangos de fechas (`dates=YYYYMMDD-YYYYMMDD`) responden HTTP 400.** La app consulta por mes (`dates=YYYYMM`)
+  y filtra por día en el cliente. `npm run eval` detecta si esto cambia.
+- Las estadísticas están en `boxscore.teams[].statistics` (una lista por equipo), no en `boxscore.statistics`.
+- Cada liga trae dos logos (claro y oscuro); la app muestra el que corresponde al tema.
+
+## Antes de publicar
+
+```bash
+npm run lint && npm test && npm run build && npm run eval
 ```

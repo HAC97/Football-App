@@ -1,0 +1,1564 @@
+{
+ "boxscore": {
+  "teams": [
+   {
+    "homeAway": "home",
+    "team": {
+     "id": "94"
+    },
+    "statistics": [
+     {
+      "name": "foulsCommitted",
+      "displayValue": "9"
+     },
+     {
+      "name": "yellowCards",
+      "displayValue": "2"
+     },
+     {
+      "name": "redCards",
+      "displayValue": "0"
+     },
+     {
+      "name": "offsides",
+      "displayValue": "2"
+     },
+     {
+      "name": "wonCorners",
+      "displayValue": "7"
+     },
+     {
+      "name": "saves",
+      "displayValue": "3"
+     },
+     {
+      "name": "possessionPct",
+      "displayValue": "54.1"
+     },
+     {
+      "name": "totalShots",
+      "displayValue": "22"
+     },
+     {
+      "name": "shotsOnTarget",
+      "displayValue": "5"
+     },
+     {
+      "name": "shotPct",
+      "displayValue": "0.2"
+     },
+     {
+      "name": "penaltyKickGoals",
+      "displayValue": "0"
+     },
+     {
+      "name": "penaltyKickShots",
+      "displayValue": "0"
+     },
+     {
+      "name": "accuratePasses",
+      "displayValue": "358"
+     },
+     {
+      "name": "totalPasses",
+      "displayValue": "425"
+     },
+     {
+      "name": "passPct",
+      "displayValue": "0.8"
+     },
+     {
+      "name": "accurateCrosses",
+      "displayValue": "6"
+     },
+     {
+      "name": "totalCrosses",
+      "displayValue": "25"
+     },
+     {
+      "name": "crossPct",
+      "displayValue": "0.2"
+     },
+     {
+      "name": "totalLongBalls",
+      "displayValue": "53"
+     },
+     {
+      "name": "accurateLongBalls",
+      "displayValue": "20"
+     },
+     {
+      "name": "longballPct",
+      "displayValue": "0.4"
+     },
+     {
+      "name": "blockedShots",
+      "displayValue": "8"
+     },
+     {
+      "name": "effectiveTackles",
+      "displayValue": "12"
+     },
+     {
+      "name": "totalTackles",
+      "displayValue": "21"
+     },
+     {
+      "name": "tacklePct",
+      "displayValue": "0.6"
+     },
+     {
+      "name": "interceptions",
+      "displayValue": "11"
+     },
+     {
+      "name": "effectiveClearance",
+      "displayValue": "18"
+     },
+     {
+      "name": "totalClearance",
+      "displayValue": "18"
+     }
+    ]
+   },
+   {
+    "homeAway": "away",
+    "team": {
+     "id": "89"
+    },
+    "statistics": [
+     {
+      "name": "foulsCommitted",
+      "displayValue": "12"
+     },
+     {
+      "name": "yellowCards",
+      "displayValue": "1"
+     },
+     {
+      "name": "redCards",
+      "displayValue": "1"
+     },
+     {
+      "name": "offsides",
+      "displayValue": "2"
+     },
+     {
+      "name": "wonCorners",
+      "displayValue": "5"
+     },
+     {
+      "name": "saves",
+      "displayValue": "4"
+     },
+     {
+      "name": "possessionPct",
+      "displayValue": "45.9"
+     },
+     {
+      "name": "totalShots",
+      "displayValue": "21"
+     },
+     {
+      "name": "shotsOnTarget",
+      "displayValue": "6"
+     },
+     {
+      "name": "shotPct",
+      "displayValue": "0.3"
+     },
+     {
+      "name": "penaltyKickGoals",
+      "displayValue": "0"
+     },
+     {
+      "name": "penaltyKickShots",
+      "displayValue": "1"
+     },
+     {
+      "name": "accuratePasses",
+      "displayValue": "303"
+     },
+     {
+      "name": "totalPasses",
+      "displayValue": "370"
+     },
+     {
+      "name": "passPct",
+      "displayValue": "0.8"
+     },
+     {
+      "name": "accurateCrosses",
+      "displayValue": "2"
+     },
+     {
+      "name": "totalCrosses",
+      "displayValue": "14"
+     },
+     {
+      "name": "crossPct",
+      "displayValue": "0.1"
+     },
+     {
+      "name": "totalLongBalls",
+      "displayValue": "52"
+     },
+     {
+      "name": "accurateLongBalls",
+      "displayValue": "21"
+     },
+     {
+      "name": "longballPct",
+      "displayValue": "0.4"
+     },
+     {
+      "name": "blockedShots",
+      "displayValue": "7"
+     },
+     {
+      "name": "effectiveTackles",
+      "displayValue": "10"
+     },
+     {
+      "name": "totalTackles",
+      "displayValue": "16"
+     },
+     {
+      "name": "tacklePct",
+      "displayValue": "0.6"
+     },
+     {
+      "name": "interceptions",
+      "displayValue": "12"
+     },
+     {
+      "name": "effectiveClearance",
+      "displayValue": "28"
+     },
+     {
+      "name": "totalClearance",
+      "displayValue": "28"
+     }
+    ]
+   }
+  ]
+ },
+ "rosters": [
+  {
+   "homeAway": "home",
+   "formation": "4-4-2",
+   "roster": [
+    {
+     "starter": true,
+     "jersey": "1",
+     "subbedIn": false,
+     "subbedOut": false,
+     "athlete": {
+      "id": "165334",
+      "displayName": "Stole Dimitrievski",
+      "shortName": "S. Dimitrievski"
+     },
+     "position": {
+      "abbreviation": "G"
+     }
+    },
+    {
+     "starter": true,
+     "jersey": "12",
+     "subbedIn": false,
+     "subbedOut": false,
+     "athlete": {
+      "id": "282086",
+      "displayName": "Justin de Haas",
+      "shortName": "J. de Haas"
+     },
+     "position": {
+      "abbreviation": "CD-L"
+     }
+    },
+    {
+     "starter": true,
+     "jersey": "18",
+     "subbedIn": false,
+     "subbedOut": false,
+     "athlete": {
+      "id": "231603",
+      "displayName": "Pepelu",
+      "shortName": "Pepelu"
+     },
+     "position": {
+      "abbreviation": "CD-R"
+     }
+    },
+    {
+     "starter": true,
+     "jersey": "14",
+     "subbedIn": false,
+     "subbedOut": true,
+     "athlete": {
+      "id": "178747",
+      "displayName": "José Gayà",
+      "shortName": "J. Gayà"
+     },
+     "position": {
+      "abbreviation": "LB"
+     }
+    },
+    {
+     "starter": true,
+     "jersey": "24",
+     "subbedIn": false,
+     "subbedOut": false,
+     "athlete": {
+      "id": "222661",
+      "displayName": "Pablo Maffeo",
+      "shortName": "P. Maffeo"
+     },
+     "position": {
+      "abbreviation": "RB"
+     }
+    },
+    {
+     "starter": true,
+     "jersey": "2",
+     "subbedIn": false,
+     "subbedOut": true,
+     "athlete": {
+      "id": "212185",
+      "displayName": "Guido Rodríguez",
+      "shortName": "G. Rodríguez"
+     },
+     "position": {
+      "abbreviation": "CM-L"
+     }
+    },
+    {
+     "starter": true,
+     "jersey": "33",
+     "subbedIn": false,
+     "subbedOut": false,
+     "athlete": {
+      "id": "419048",
+      "displayName": "Aaron Mayol",
+      "shortName": "A. Mayol"
+     },
+     "position": {
+      "abbreviation": "CM-R"
+     }
+    },
+    {
+     "starter": true,
+     "jersey": "7",
+     "subbedIn": false,
+     "subbedOut": true,
+     "athlete": {
+      "id": "231618",
+      "displayName": "Arnaut Danjuma",
+      "shortName": "A. Danjuma"
+     },
+     "position": {
+      "abbreviation": "LM"
+     }
+    },
+    {
+     "starter": true,
+     "jersey": "23",
+     "subbedIn": false,
+     "subbedOut": true,
+     "athlete": {
+      "id": "248681",
+      "displayName": "Filip Ugrinic",
+      "shortName": "F. Ugrinic"
+     },
+     "position": {
+      "abbreviation": "RM"
+     }
+    },
+    {
+     "starter": true,
+     "jersey": "9",
+     "subbedIn": false,
+     "subbedOut": true,
+     "athlete": {
+      "id": "267477",
+      "displayName": "Hugo Duro",
+      "shortName": "H. Duro"
+     },
+     "position": {
+      "abbreviation": "CF-L"
+     }
+    },
+    {
+     "starter": true,
+     "jersey": "8",
+     "subbedIn": false,
+     "subbedOut": false,
+     "athlete": {
+      "id": "16340",
+      "displayName": "Javier Guerra",
+      "shortName": "J. Guerra"
+     },
+     "position": {
+      "abbreviation": "CF-R"
+     }
+    },
+    {
+     "starter": false,
+     "jersey": "10",
+     "subbedIn": true,
+     "subbedOut": false,
+     "athlete": {
+      "id": "280806",
+      "displayName": "Harvey Elliott",
+      "shortName": "H. Elliott"
+     },
+     "position": {
+      "abbreviation": "SUB"
+     }
+    },
+    {
+     "starter": false,
+     "jersey": "27",
+     "subbedIn": true,
+     "subbedOut": false,
+     "athlete": {
+      "id": "377768",
+      "displayName": "David Otorbi",
+      "shortName": "D. Otorbi"
+     },
+     "position": {
+      "abbreviation": "SUB"
+     }
+    },
+    {
+     "starter": false,
+     "jersey": "11",
+     "subbedIn": true,
+     "subbedOut": false,
+     "athlete": {
+      "id": "264177",
+      "displayName": "Luis Rioja",
+      "shortName": "L. Rioja"
+     },
+     "position": {
+      "abbreviation": "SUB"
+     }
+    },
+    {
+     "starter": false,
+     "jersey": "21",
+     "subbedIn": true,
+     "subbedOut": false,
+     "athlete": {
+      "id": "189804",
+      "displayName": "Jesús Vázquez",
+      "shortName": "J. Vázquez"
+     },
+     "position": {
+      "abbreviation": "SUB"
+     }
+    },
+    {
+     "starter": false,
+     "jersey": "15",
+     "subbedIn": false,
+     "subbedOut": false,
+     "athlete": {
+      "id": "232803",
+      "displayName": "Aliou Dieng",
+      "shortName": "A. Dieng"
+     },
+     "position": {
+      "abbreviation": "SUB"
+     }
+    },
+    {
+     "starter": false,
+     "jersey": "39",
+     "subbedIn": false,
+     "subbedOut": false,
+     "athlete": {
+      "id": "360096",
+      "displayName": "Ryunosuke Sato",
+      "shortName": "R. Sato"
+     },
+     "position": {
+      "abbreviation": "SUB"
+     }
+    },
+    {
+     "starter": false,
+     "jersey": "19",
+     "subbedIn": false,
+     "subbedOut": false,
+     "athlete": {
+      "id": "253763",
+      "displayName": "Dani Raba",
+      "shortName": "D. Raba"
+     },
+     "position": {
+      "abbreviation": "SUB"
+     }
+    },
+    {
+     "starter": false,
+     "jersey": "36",
+     "subbedIn": false,
+     "subbedOut": false,
+     "athlete": {
+      "id": "388076",
+      "displayName": "Iker Córdoba",
+      "shortName": "I. Córdoba"
+     },
+     "position": {
+      "abbreviation": "SUB"
+     }
+    },
+    {
+     "starter": false,
+     "jersey": "29",
+     "subbedIn": false,
+     "subbedOut": false,
+     "athlete": {
+      "id": "413671",
+      "displayName": "Alex Panach",
+      "shortName": "Alex Panach"
+     },
+     "position": {
+      "abbreviation": "SUB"
+     }
+    },
+    {
+     "starter": false,
+     "jersey": "22",
+     "subbedIn": false,
+     "subbedOut": false,
+     "athlete": {
+      "id": "308728",
+      "displayName": "Arnau Martínez",
+      "shortName": "A. Martínez"
+     },
+     "position": {
+      "abbreviation": "SUB"
+     }
+    },
+    {
+     "starter": false,
+     "jersey": "37",
+     "subbedIn": true,
+     "subbedOut": false,
+     "athlete": {
+      "id": "409380",
+      "displayName": "Aimar Blázquez",
+      "shortName": "A. Blázquez"
+     },
+     "position": {
+      "abbreviation": "SUB"
+     }
+    },
+    {
+     "starter": false,
+     "jersey": "25",
+     "subbedIn": false,
+     "subbedOut": false,
+     "athlete": {
+      "id": "324582",
+      "displayName": "Kayne Van Oevelen",
+      "shortName": "K. Van Oevelen"
+     },
+     "position": {
+      "abbreviation": "SUB"
+     }
+    }
+   ]
+  },
+  {
+   "homeAway": "away",
+   "formation": "4-4-2",
+   "roster": [
+    {
+     "starter": true,
+     "jersey": "1",
+     "subbedIn": false,
+     "subbedOut": false,
+     "athlete": {
+      "id": "217319",
+      "displayName": "Álex Remiro",
+      "shortName": "Á. Remiro"
+     },
+     "position": {
+      "abbreviation": "G"
+     }
+    },
+    {
+     "starter": true,
+     "jersey": "6",
+     "subbedIn": false,
+     "subbedOut": false,
+     "athlete": {
+      "id": "366885",
+      "displayName": "Jon Martín",
+      "shortName": "J. Martín"
+     },
+     "position": {
+      "abbreviation": "CD-L"
+     }
+    },
+    {
+     "starter": true,
+     "jersey": "34",
+     "subbedIn": false,
+     "subbedOut": false,
+     "athlete": {
+      "id": "396607",
+      "displayName": "Luken Beitia",
+      "shortName": "L. Beitia"
+     },
+     "position": {
+      "abbreviation": "CD-R"
+     }
+    },
+    {
+     "starter": true,
+     "jersey": "17",
+     "subbedIn": false,
+     "subbedOut": true,
+     "athlete": {
+      "id": "265993",
+      "displayName": "Sergio Gómez",
+      "shortName": "S. Gómez"
+     },
+     "position": {
+      "abbreviation": "LB"
+     }
+    },
+    {
+     "starter": true,
+     "jersey": "2",
+     "subbedIn": false,
+     "subbedOut": false,
+     "athlete": {
+      "id": "318063",
+      "displayName": "Jon Aramburu",
+      "shortName": "J. Aramburu"
+     },
+     "position": {
+      "abbreviation": "RB"
+     }
+    },
+    {
+     "starter": true,
+     "jersey": "18",
+     "subbedIn": false,
+     "subbedOut": false,
+     "athlete": {
+      "id": "235072",
+      "displayName": "Carlos Soler",
+      "shortName": "C. Soler"
+     },
+     "position": {
+      "abbreviation": "CM-L"
+     }
+    },
+    {
+     "starter": true,
+     "jersey": "4",
+     "subbedIn": false,
+     "subbedOut": true,
+     "athlete": {
+      "id": "388601",
+      "displayName": "Jon Gorrotxategi",
+      "shortName": "J. Gorrotxategi"
+     },
+     "position": {
+      "abbreviation": "CM-R"
+     }
+    },
+    {
+     "starter": true,
+     "jersey": "11",
+     "subbedIn": false,
+     "subbedOut": false,
+     "athlete": {
+      "id": "213141",
+      "displayName": "Gonçalo Guedes",
+      "shortName": "G. Guedes"
+     },
+     "position": {
+      "abbreviation": "LM"
+     }
+    },
+    {
+     "starter": true,
+     "jersey": "12",
+     "subbedIn": false,
+     "subbedOut": true,
+     "athlete": {
+      "id": "406379",
+      "displayName": "Job Ochieng",
+      "shortName": "J. Ochieng"
+     },
+     "position": {
+      "abbreviation": "RM"
+     }
+    },
+    {
+     "starter": true,
+     "jersey": "10",
+     "subbedIn": false,
+     "subbedOut": true,
+     "athlete": {
+      "id": "229018",
+      "displayName": "Mikel Oyarzabal",
+      "shortName": "M. Oyarzabal"
+     },
+     "position": {
+      "abbreviation": "CF-L"
+     }
+    },
+    {
+     "starter": true,
+     "jersey": "24",
+     "subbedIn": false,
+     "subbedOut": true,
+     "athlete": {
+      "id": "306263",
+      "displayName": "Luka Sucic",
+      "shortName": "L. Sucic"
+     },
+     "position": {
+      "abbreviation": "CF-R"
+     }
+    },
+    {
+     "starter": false,
+     "jersey": "19",
+     "subbedIn": false,
+     "subbedOut": false,
+     "athlete": {
+      "id": "355433",
+      "displayName": "Mamadou Sarr",
+      "shortName": "M. Sarr"
+     },
+     "position": {
+      "abbreviation": "SUB"
+     }
+    },
+    {
+     "starter": false,
+     "jersey": "29",
+     "subbedIn": false,
+     "subbedOut": false,
+     "athlete": {
+      "id": "396613",
+      "displayName": "Alex Marchal",
+      "shortName": "A. Marchal"
+     },
+     "position": {
+      "abbreviation": "SUB"
+     }
+    },
+    {
+     "starter": false,
+     "jersey": "3",
+     "subbedIn": true,
+     "subbedOut": false,
+     "athlete": {
+      "id": "283891",
+      "displayName": "Aihen Muñoz",
+      "shortName": "A. Muñoz"
+     },
+     "position": {
+      "abbreviation": "SUB"
+     }
+    },
+    {
+     "starter": false,
+     "jersey": "14",
+     "subbedIn": false,
+     "subbedOut": false,
+     "athlete": {
+      "id": "256587",
+      "displayName": "Takefusa Kubo",
+      "shortName": "T. Kubo"
+     },
+     "position": {
+      "abbreviation": "SUB"
+     }
+    },
+    {
+     "starter": false,
+     "jersey": "13",
+     "subbedIn": false,
+     "subbedOut": false,
+     "athlete": {
+      "id": "312011",
+      "displayName": "Unai Marrero",
+      "shortName": "U. Marrero"
+     },
+     "position": {
+      "abbreviation": "SUB"
+     }
+    },
+    {
+     "starter": false,
+     "jersey": "23",
+     "subbedIn": true,
+     "subbedOut": false,
+     "athlete": {
+      "id": "307487",
+      "displayName": "Arsen Zakharyan",
+      "shortName": "A. Zakharyan"
+     },
+     "position": {
+      "abbreviation": "SUB"
+     }
+    },
+    {
+     "starter": false,
+     "jersey": "7",
+     "subbedIn": true,
+     "subbedOut": false,
+     "athlete": {
+      "id": "283941",
+      "displayName": "Ander Barrenetxea",
+      "shortName": "A. Barrenetxea"
+     },
+     "position": {
+      "abbreviation": "SUB"
+     }
+    },
+    {
+     "starter": false,
+     "jersey": "8",
+     "subbedIn": false,
+     "subbedOut": false,
+     "athlete": {
+      "id": "297371",
+      "displayName": "Beñat Turrientes",
+      "shortName": "B. Turrientes"
+     },
+     "position": {
+      "abbreviation": "SUB"
+     }
+    },
+    {
+     "starter": false,
+     "jersey": "22",
+     "subbedIn": false,
+     "subbedOut": false,
+     "athlete": {
+      "id": "363039",
+      "displayName": "Héctor Fort",
+      "shortName": "H. Fort"
+     },
+     "position": {
+      "abbreviation": "SUB"
+     }
+    },
+    {
+     "starter": false,
+     "jersey": "9",
+     "subbedIn": true,
+     "subbedOut": false,
+     "athlete": {
+      "id": "341367",
+      "displayName": "Orri Óskarsson",
+      "shortName": "O. Óskarsson"
+     },
+     "position": {
+      "abbreviation": "SUB"
+     }
+    },
+    {
+     "starter": false,
+     "jersey": "16",
+     "subbedIn": false,
+     "subbedOut": false,
+     "athlete": {
+      "id": "297359",
+      "displayName": "Jon Pacheco",
+      "shortName": "J. Pacheco"
+     },
+     "position": {
+      "abbreviation": "SUB"
+     }
+    },
+    {
+     "starter": false,
+     "jersey": "21",
+     "subbedIn": true,
+     "subbedOut": false,
+     "athlete": {
+      "id": "236185",
+      "displayName": "Yangel Herrera",
+      "shortName": "Y. Herrera"
+     },
+     "position": {
+      "abbreviation": "SUB"
+     }
+    }
+   ]
+  }
+ ],
+ "keyEvents": [
+  {
+   "id": "52748750",
+   "type": {
+    "type": "kickoff",
+    "text": "Kickoff"
+   },
+   "text": "First Half begins.",
+   "clock": {
+    "value": 0,
+    "displayValue": ""
+   },
+   "scoringPlay": false
+  },
+  {
+   "id": "52750336",
+   "type": {
+    "type": "yellow-card",
+    "text": "Yellow Card"
+   },
+   "text": "Justin de Haas (Valencia) is shown the yellow card for a bad foul.",
+   "shortText": "Justin de Haas Yellow Card",
+   "clock": {
+    "value": 609,
+    "displayValue": "11'"
+   },
+   "scoringPlay": false,
+   "team": {
+    "id": "94"
+   },
+   "participants": [
+    {
+     "athlete": {
+      "id": "282086",
+      "displayName": "Justin de Haas"
+     }
+    }
+   ]
+  },
+  {
+   "id": "52750538",
+   "type": {
+    "type": "yellow-card",
+    "text": "Yellow Card"
+   },
+   "text": "José Gayà (Valencia) is shown the yellow card for a bad foul.",
+   "shortText": "José Gayà Yellow Card",
+   "clock": {
+    "value": 690,
+    "displayValue": "12'"
+   },
+   "scoringPlay": false,
+   "team": {
+    "id": "94"
+   },
+   "participants": [
+    {
+     "athlete": {
+      "id": "178747",
+      "displayName": "José Gayà"
+     }
+    }
+   ]
+  },
+  {
+   "id": "52752253",
+   "type": {
+    "type": "goal",
+    "text": "Goal"
+   },
+   "text": "Goal! Valencia 0, Real Sociedad 1. Luka Sucic (Real Sociedad) left footed shot from the centre of the box to the top left corner. Assisted by Job Ochieng.",
+   "shortText": "Luka Sucic Goal",
+   "clock": {
+    "value": 1509,
+    "displayValue": "26'"
+   },
+   "scoringPlay": true,
+   "team": {
+    "id": "89"
+   },
+   "participants": [
+    {
+     "athlete": {
+      "id": "306263",
+      "displayName": "Luka Sucic"
+     }
+    },
+    {
+     "athlete": {
+      "id": "406379",
+      "displayName": "Job Ochieng"
+     }
+    }
+   ]
+  },
+  {
+   "id": "52754759",
+   "type": {
+    "type": "halftime",
+    "text": "Halftime"
+   },
+   "clock": {
+    "value": 2700,
+    "displayValue": "45'+2'"
+   },
+   "scoringPlay": false
+  },
+  {
+   "id": "52755821",
+   "type": {
+    "type": "substitution",
+    "text": "Substitution"
+   },
+   "text": "Substitution, Valencia. David Otorbi replaces Filip Ugrinic.",
+   "shortText": "David Otorbi Substitution",
+   "clock": {
+    "value": 2700,
+    "displayValue": "45'"
+   },
+   "scoringPlay": false,
+   "team": {
+    "id": "94"
+   },
+   "participants": [
+    {
+     "athlete": {
+      "id": "377768",
+      "displayName": "David Otorbi"
+     }
+    },
+    {
+     "athlete": {
+      "id": "248681",
+      "displayName": "Filip Ugrinic"
+     }
+    }
+   ]
+  },
+  {
+   "id": "52755965",
+   "type": {
+    "type": "start-2nd-half",
+    "text": "Start 2nd Half"
+   },
+   "clock": {
+    "value": 2700,
+    "displayValue": "45'"
+   },
+   "scoringPlay": false
+  },
+  {
+   "id": "52757138",
+   "type": {
+    "type": "yellow-card",
+    "text": "Yellow Card"
+   },
+   "text": "Luka Sucic (Real Sociedad) is shown the yellow card for a bad foul.",
+   "shortText": "Luka Sucic Yellow Card",
+   "clock": {
+    "value": 3232,
+    "displayValue": "54'"
+   },
+   "scoringPlay": false,
+   "team": {
+    "id": "89"
+   },
+   "participants": [
+    {
+     "athlete": {
+      "id": "306263",
+      "displayName": "Luka Sucic"
+     }
+    }
+   ]
+  },
+  {
+   "id": "52757383",
+   "type": {
+    "type": "goal",
+    "text": "Goal"
+   },
+   "text": "Goal! Valencia 1, Real Sociedad 1. Aaron Mayol (Valencia) right footed shot from the right side of the box to the top right corner. Assisted by Hugo Duro with a headed pass.",
+   "shortText": "Aaron Mayol Goal",
+   "clock": {
+    "value": 3410,
+    "displayValue": "57'"
+   },
+   "scoringPlay": true,
+   "team": {
+    "id": "94"
+   },
+   "participants": [
+    {
+     "athlete": {
+      "id": "419048",
+      "displayName": "Aaron Mayol"
+     }
+    },
+    {
+     "athlete": {
+      "id": "267477",
+      "displayName": "Hugo Duro"
+     }
+    }
+   ]
+  },
+  {
+   "id": "52757958",
+   "type": {
+    "type": "substitution",
+    "text": "Substitution"
+   },
+   "text": "Substitution, Real Sociedad. Orri Óskarsson replaces Mikel Oyarzabal.",
+   "shortText": "Orri Óskarsson Substitution",
+   "clock": {
+    "value": 3633,
+    "displayValue": "61'"
+   },
+   "scoringPlay": false,
+   "team": {
+    "id": "89"
+   },
+   "participants": [
+    {
+     "athlete": {
+      "id": "341367",
+      "displayName": "Orri Óskarsson"
+     }
+    },
+    {
+     "athlete": {
+      "id": "229018",
+      "displayName": "Mikel Oyarzabal"
+     }
+    }
+   ]
+  },
+  {
+   "id": "52757959",
+   "type": {
+    "type": "substitution",
+    "text": "Substitution"
+   },
+   "text": "Substitution, Real Sociedad. Ander Barrenetxea replaces Job Ochieng.",
+   "shortText": "Ander Barrenetxea Substitution",
+   "clock": {
+    "value": 3638,
+    "displayValue": "61'"
+   },
+   "scoringPlay": false,
+   "team": {
+    "id": "89"
+   },
+   "participants": [
+    {
+     "athlete": {
+      "id": "283941",
+      "displayName": "Ander Barrenetxea"
+     }
+    },
+    {
+     "athlete": {
+      "id": "406379",
+      "displayName": "Job Ochieng"
+     }
+    }
+   ]
+  },
+  {
+   "id": "52759190",
+   "type": {
+    "type": "substitution",
+    "text": "Substitution"
+   },
+   "text": "Substitution, Real Sociedad. Yangel Herrera replaces Jon Gorrotxategi.",
+   "shortText": "Yangel Herrera Substitution",
+   "clock": {
+    "value": 4110,
+    "displayValue": "69'"
+   },
+   "scoringPlay": false,
+   "team": {
+    "id": "89"
+   },
+   "participants": [
+    {
+     "athlete": {
+      "id": "236185",
+      "displayName": "Yangel Herrera"
+     }
+    },
+    {
+     "athlete": {
+      "id": "388601",
+      "displayName": "Jon Gorrotxategi"
+     }
+    }
+   ]
+  },
+  {
+   "id": "52759191",
+   "type": {
+    "type": "substitution",
+    "text": "Substitution"
+   },
+   "text": "Substitution, Real Sociedad. Aihen Muñoz replaces Sergio Gómez.",
+   "shortText": "Aihen Muñoz Substitution",
+   "clock": {
+    "value": 4125,
+    "displayValue": "69'"
+   },
+   "scoringPlay": false,
+   "team": {
+    "id": "89"
+   },
+   "participants": [
+    {
+     "athlete": {
+      "id": "283891",
+      "displayName": "Aihen Muñoz"
+     }
+    },
+    {
+     "athlete": {
+      "id": "265993",
+      "displayName": "Sergio Gómez"
+     }
+    }
+   ]
+  },
+  {
+   "id": "52758963",
+   "type": {
+    "type": "substitution",
+    "text": "Substitution"
+   },
+   "text": "Substitution, Valencia. Harvey Elliott replaces Guido Rodríguez.",
+   "shortText": "Harvey Elliott Substitution",
+   "clock": {
+    "value": 4130,
+    "displayValue": "69'"
+   },
+   "scoringPlay": false,
+   "team": {
+    "id": "94"
+   },
+   "participants": [
+    {
+     "athlete": {
+      "id": "280806",
+      "displayName": "Harvey Elliott"
+     }
+    },
+    {
+     "athlete": {
+      "id": "212185",
+      "displayName": "Guido Rodríguez"
+     }
+    }
+   ]
+  },
+  {
+   "id": "52759703",
+   "type": {
+    "type": "penalty---scored",
+    "text": "Penalty - Scored"
+   },
+   "text": "Goal! Valencia 1, Real Sociedad 2. Carlos Soler (Real Sociedad) converts the penalty with a right footed shot to the bottom left corner.",
+   "shortText": "Carlos Soler Penalty - Scored",
+   "clock": {
+    "value": 4499,
+    "displayValue": "75'"
+   },
+   "scoringPlay": true,
+   "team": {
+    "id": "89"
+   },
+   "participants": [
+    {
+     "athlete": {
+      "id": "235072",
+      "displayName": "Carlos Soler"
+     }
+    }
+   ]
+  },
+  {
+   "id": "52760636",
+   "type": {
+    "type": "substitution",
+    "text": "Substitution"
+   },
+   "text": "Substitution, Valencia. Jesús Vázquez replaces José Gayà.",
+   "shortText": "Jesús Vázquez Substitution",
+   "clock": {
+    "value": 4894,
+    "displayValue": "82'"
+   },
+   "scoringPlay": false,
+   "team": {
+    "id": "94"
+   },
+   "participants": [
+    {
+     "athlete": {
+      "id": "189804",
+      "displayName": "Jesús Vázquez"
+     }
+    },
+    {
+     "athlete": {
+      "id": "178747",
+      "displayName": "José Gayà"
+     }
+    }
+   ]
+  },
+  {
+   "id": "52760788",
+   "type": {
+    "type": "substitution",
+    "text": "Substitution"
+   },
+   "text": "Substitution, Valencia. Aimar Blázquez replaces Hugo Duro.",
+   "shortText": "Aimar Blázquez Substitution",
+   "clock": {
+    "value": 4895,
+    "displayValue": "82'"
+   },
+   "scoringPlay": false,
+   "team": {
+    "id": "94"
+   },
+   "participants": [
+    {
+     "athlete": {
+      "id": "409380",
+      "displayName": "Aimar Blázquez"
+     }
+    },
+    {
+     "athlete": {
+      "id": "267477",
+      "displayName": "Hugo Duro"
+     }
+    }
+   ]
+  },
+  {
+   "id": "52761003",
+   "type": {
+    "type": "own-goal",
+    "text": "Own Goal"
+   },
+   "text": "Own Goal by Luken Beitia, Real Sociedad. Valencia 2, Real Sociedad 2.",
+   "shortText": "Luken Beitia Own Goal",
+   "clock": {
+    "value": 4998,
+    "displayValue": "84'"
+   },
+   "scoringPlay": true,
+   "team": {
+    "id": "94"
+   },
+   "participants": [
+    {
+     "athlete": {
+      "id": "396607",
+      "displayName": "Luken Beitia"
+     }
+    }
+   ]
+  },
+  {
+   "id": "52761159",
+   "type": {
+    "type": "start-delay",
+    "text": "Start Delay"
+   },
+   "clock": {
+    "value": 4999,
+    "displayValue": "84'"
+   },
+   "scoringPlay": false,
+   "team": {
+    "id": "94"
+   }
+  },
+  {
+   "id": "52761160",
+   "type": {
+    "type": "end-delay",
+    "text": "End Delay"
+   },
+   "clock": {
+    "value": 5185,
+    "displayValue": "87'"
+   },
+   "scoringPlay": false,
+   "team": {
+    "id": "94"
+   }
+  },
+  {
+   "id": "52761296",
+   "type": {
+    "type": "substitution",
+    "text": "Substitution"
+   },
+   "text": "Substitution, Real Sociedad. Arsen Zakharyan replaces Luka Sucic.",
+   "shortText": "Arsen Zakharyan Substitution",
+   "clock": {
+    "value": 5216,
+    "displayValue": "87'"
+   },
+   "scoringPlay": false,
+   "team": {
+    "id": "89"
+   },
+   "participants": [
+    {
+     "athlete": {
+      "id": "307487",
+      "displayName": "Arsen Zakharyan"
+     }
+    },
+    {
+     "athlete": {
+      "id": "306263",
+      "displayName": "Luka Sucic"
+     }
+    }
+   ]
+  },
+  {
+   "id": "52761297",
+   "type": {
+    "type": "substitution",
+    "text": "Substitution"
+   },
+   "text": "Substitution, Valencia. Luis Rioja replaces Arnaut Danjuma.",
+   "shortText": "Luis Rioja Substitution",
+   "clock": {
+    "value": 5224,
+    "displayValue": "88'"
+   },
+   "scoringPlay": false,
+   "team": {
+    "id": "94"
+   },
+   "participants": [
+    {
+     "athlete": {
+      "id": "264177",
+      "displayName": "Luis Rioja"
+     }
+    },
+    {
+     "athlete": {
+      "id": "231618",
+      "displayName": "Arnaut Danjuma"
+     }
+    }
+   ]
+  },
+  {
+   "id": "52761562",
+   "type": {
+    "type": "goal",
+    "text": "Goal"
+   },
+   "text": "Goal! Valencia 2, Real Sociedad 3. Ander Barrenetxea (Real Sociedad) right footed shot from the right side of the box to the top right corner. Assisted by Carlos Soler following a corner.",
+   "shortText": "Ander Barrenetxea Goal",
+   "clock": {
+    "value": 5400,
+    "displayValue": "90'+1'"
+   },
+   "scoringPlay": true,
+   "team": {
+    "id": "89"
+   },
+   "participants": [
+    {
+     "athlete": {
+      "id": "283941",
+      "displayName": "Ander Barrenetxea"
+     }
+    },
+    {
+     "athlete": {
+      "id": "235072",
+      "displayName": "Carlos Soler"
+     }
+    }
+   ]
+  },
+  {
+   "id": "52761972",
+   "type": {
+    "type": "yellow-card",
+    "text": "Yellow Card"
+   },
+   "text": "Orri Óskarsson (Real Sociedad) is shown the yellow card.",
+   "shortText": "Orri Óskarsson Yellow Card",
+   "clock": {
+    "value": 5400,
+    "displayValue": "90'+6'"
+   },
+   "scoringPlay": false,
+   "team": {
+    "id": "89"
+   },
+   "participants": [
+    {
+     "athlete": {
+      "id": "341367",
+      "displayName": "Orri Óskarsson"
+     }
+    }
+   ]
+  },
+  {
+   "id": "52762040",
+   "type": {
+    "type": "red-card",
+    "text": "Red Card"
+   },
+   "text": "Second yellow card to Orri Óskarsson (Real Sociedad).",
+   "shortText": "Orri Óskarsson Red Card",
+   "clock": {
+    "value": 5400,
+    "displayValue": "90'+6'"
+   },
+   "scoringPlay": false,
+   "team": {
+    "id": "89"
+   },
+   "participants": [
+    {
+     "athlete": {
+      "id": "341367",
+      "displayName": "Orri Óskarsson"
+     }
+    }
+   ]
+  },
+  {
+   "id": "52762061",
+   "type": {
+    "type": "end-regular-time",
+    "text": "End Regular Time"
+   },
+   "text": "Second Half ends, Valencia 2, Real Sociedad 3.",
+   "clock": {
+    "value": 5400,
+    "displayValue": "90'+7'"
+   },
+   "scoringPlay": false
+  }
+ ]
+}

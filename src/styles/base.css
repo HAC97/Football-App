@@ -1,0 +1,143 @@
+/* Design tokens. Chrome is monochrome; colour is reserved for meaning:
+   amber = scoreboard digits, flare = live, turf = win / qualification. */
+:root,
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #0b1016;
+  --surface: #121922;
+  --surface-2: #19222d;
+  --surface-3: #212c39;
+  --line: #243040;
+  --text: #e9eef4;
+  --text-2: #98a6b8;
+  --text-3: #8b99ab;
+  --ink-invert: #0b1016;
+  --led: #ffc53d;
+  --tile: #05080c;
+  --tile-line: #1a222c;
+  --live: #ff5a3c;
+  --live-soft: rgba(255, 90, 60, 0.14);
+  --turf: #22c993;
+  --loss: #ff7a6b;
+  --side-home: #22c993;
+  --side-away: #5b9bff;
+  --shadow: 0 1px 0 rgba(255, 255, 255, 0.03) inset, 0 12px 32px rgba(0, 0, 0, 0.35);
+  --scrim: rgba(3, 6, 10, 0.72);
+  --pitch-a: #123524;
+  --pitch-b: #0f2d1f;
+}
+
+:root[data-theme='light'] {
+  color-scheme: light;
+  --bg: #edf0f4;
+  --surface: #ffffff;
+  --surface-2: #f4f6f9;
+  --surface-3: #e6eaf0;
+  --line: #d9dfe7;
+  --text: #0e141b;
+  --text-2: #3a4759;
+  --text-3: #4b586b;
+  --ink-invert: #ffffff;
+  --live: #d4381b;
+  --live-soft: rgba(212, 56, 27, 0.1);
+  --turf: #067a55;
+  --loss: #b8352a;
+  --side-home: #0a8f65;
+  --side-away: #2f6fe0;
+  --shadow: 0 1px 2px rgba(14, 20, 27, 0.06), 0 10px 28px rgba(14, 20, 27, 0.08);
+  --scrim: rgba(14, 20, 27, 0.5);
+  --pitch-a: #1c6a44;
+  --pitch-b: #165a3a;
+}
+
+:root {
+  --font-display: 'Big Shoulders Display', 'Arial Narrow', Impact, sans-serif;
+  --font-body: 'Instrument Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --radius: 14px;
+  --radius-sm: 10px;
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  margin: 0;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.45;
+  min-height: 100vh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+body:has(dialog[open]) {
+  overflow: hidden;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  text-align: inherit;
+}
+
+img,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+ul,
+ol {
+  list-style: none;
+  padding: 0;
+}
+
+h1,
+h2,
+h3 {
+  font-weight: 600;
+  line-height: 1.15;
+}
+
+:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
