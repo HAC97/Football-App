@@ -1,78 +1,118 @@
-import React, { useEffect, useState } from 'react';
-import { fetchStandings } from '../services/api';
-import type { StandingsGroup, League } from '../types';
-import { motion } from 'framer-motion';
+import { useMemo } from 'react';
+import { ChevronDown } from 'lucide-react';
+import { Crest } from './Crest';
+import { LeagueLogo } from './Crest';
+import { fetchStandings } from '../services/espn';
+import { useFetch } from '../hooks/useFetch';
+import type { League, LeagueMeta } from '../types';
 
-interface StandingsProps {
-  league: League;
+interface Props {
+  leagues: League[];
+  meta: Record<string, LeagueMeta>;
+  leagueId: string;
+  onPick: (id: string) => void;
 }
 
-export const Standings: React.FC<StandingsProps> = ({ league }) => {
-  const [standingsGroups, setStandingsGroups] = useState<StandingsGroup[]>([]);
-  const [loading, setLoading] = useState(true);
+export function Standings({ leagues, meta, leagueId, onPick }: Props) {
+  const league = leagues.find((l) => l.id === leagueId) ?? leagues[0];
+  const { data, error, loading, reload } = useFetch(league.id, (signal) => fetchStandings(league, signal));
 
-  useEffect(() => {
-    async function loadStandings() {
-      setLoading(true);
-      const data = await fetchStandings(league.id);
-      setStandingsGroups(data);
-      setLoading(false);
-    }
-    loadStandings();
-  }, [league.id]);
-
-  if (loading) {
-    return <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>Cargando posiciones...</div>;
-  }
-
-  if (standingsGroups.length === 0) {
-    return <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>Tabla no disponible.</div>;
-  }
+  const zones = useMemo(() => {
+    const seen = new Map<string, string>();
+    data?.forEach((g) => g.entries.forEach((e) => e.zone && seen.set(e.zone.description, e.zone.color)));
+    return [...seen.entries()];
+  }, [data]);
 
   return (
-    <motion.div 
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
-      style={{ '--league-color': league.color } as React.CSSProperties}
-    >
-      {standingsGroups.map((group, groupIdx) => (
-        <div key={groupIdx} className="glass-panel" style={{ overflow: 'hidden', padding: '1rem', marginBottom: '1.5rem' }}>
-          {standingsGroups.length > 1 && (
-            <h3 style={{ marginBottom: '1rem', fontSize: '1rem', color: 'var(--text-primary)' }}>{group.name}</h3>
-          )}
-          
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>
-              <thead>
-                <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)', color: 'var(--text-secondary)', fontSize: '0.75rem', textTransform: 'uppercase' }}>
-                  <th style={{ padding: '0.5rem', width: '20px', textAlign: 'center' }}>#</th>
-                  <th style={{ padding: '0.5rem' }}>Team</th>
-                  <th style={{ padding: '0.5rem', textAlign: 'center' }}>P</th>
-                  <th style={{ padding: '0.5rem', textAlign: 'center' }}>GD</th>
-                  <th style={{ padding: '0.5rem', textAlign: 'center' }}>PTS</th>
+    <section className="standings" aria-labelledby="standings-title">
+      <header className="standings__head">
+        <h2 id="standings-title">Posiciones</h2>
+        <label className="picker">
+          <LeagueLogo league={league} meta={meta[league.id]} size={22} />
+          <span className="picker__label">{league.name}</span>
+          <span className="sr-only">Liga de la tabla</span>
+          <select value={league.id} onChange={(e) => onPick(e.target.value)}>
+            {leagues.map((l) => (
+              <option key={l.id} value={l.id}>
+                {l.name}
+              </option>
+            ))}
+          </select>
+          <ChevronDown size={16} aria-hidden="true" />
+        </label>
+      </header>
+
+      {loading && (
+        <div className="skeleton-list" aria-busy="true" aria-label="Cargando posiciones">
+          {Array.from({ length: 12 }, (_, i) => (
+            <div key={i} className="skeleton skeleton--line" />
+          ))}
+        </div>
+      )}
+
+      {error && (
+        <div className="state state--compact">
+          <p>No pudimos cargar la tabla.</p>
+          <button className="btn" onClick={reload}>
+            Reintentar
+          </button>
+        </div>
+      )}
+
+      {data && data.length === 0 && <p className="state state--compact">Esta competencia no tiene tabla de posiciones.</p>}
+
+      {data?.map((group) => (
+        <div key={group.name} className="table-wrap">
+          {data.length > 1 && <h3 className="table-group">{group.name}</h3>}
+          <table className="table">
+            <caption className="sr-only">{`${league.name}: ${group.name}`}</caption>
+            <thead>
+              <tr>
+                <th scope="col">#</th>
+                <th scope="col">Equipo</th>
+                <th scope="col" title="Partidos jugados">
+                  PJ
+                </th>
+                <th scope="col" title="Diferencia de gol">
+                  DG
+                </th>
+                <th scope="col" title="Puntos">
+                  Pts
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {group.entries.map((row) => (
+                <tr key={row.id}>
+                  <td className="table__rank" style={row.zone ? { boxShadow: `inset 3px 0 0 ${row.zone.color}` } : undefined} title={row.zone?.description}>
+                    {row.rank}
+                  </td>
+                  <td>
+                    <span className="table__team">
+                      <Crest team={row.team} size={20} />
+                      <span title={row.team.name}>{row.team.name}</span>
+                    </span>
+                  </td>
+                  <td>{row.played}</td>
+                  <td data-sign={Math.sign(row.goalDifference)}>{row.goalDifference > 0 ? `+${row.goalDifference}` : row.goalDifference}</td>
+                  <td className="table__pts">{row.points}</td>
                 </tr>
-              </thead>
-              <tbody>
-                {group.entries.map((row, idx) => (
-                  <tr key={row.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', background: idx % 2 === 0 ? 'rgba(0,0,0,0.1)' : 'transparent' }}>
-                    <td style={{ padding: '0.5rem', textAlign: 'center', fontWeight: 'bold' }}>{row.rank}</td>
-                    <td style={{ padding: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '120px' }}>
-                      <img src={row.team.logo} alt={row.team.name} style={{ width: '20px', height: '20px', objectFit: 'contain' }} />
-                      <span title={row.team.name}>{row.team.shortName || row.team.name}</span>
-                    </td>
-                    <td style={{ padding: '0.5rem', textAlign: 'center' }}>{row.played}</td>
-                    <td style={{ padding: '0.5rem', textAlign: 'center', color: row.goalDifference > 0 ? '#4ade80' : row.goalDifference < 0 ? '#f87171' : 'inherit' }}>
-                      {row.goalDifference > 0 ? `+${row.goalDifference}` : row.goalDifference}
-                    </td>
-                    <td style={{ padding: '0.5rem', textAlign: 'center', fontWeight: 'bold', color: 'var(--accent)' }}>{row.points}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+              ))}
+            </tbody>
+          </table>
         </div>
       ))}
-    </motion.div>
+
+      {zones.length > 0 && (
+        <ul className="legend" aria-label="Referencias de la tabla">
+          {zones.map(([description, color]) => (
+            <li key={description}>
+              <span className="legend__swatch" style={{ background: color }} aria-hidden="true" />
+              {description}
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
   );
-};
+}
