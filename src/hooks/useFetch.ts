@@ -24,7 +24,9 @@ export function useFetch<T>(key: string, load: (signal: AbortSignal) => Promise<
   useEffect(() => {
     const controller = new AbortController();
     load(controller.signal)
-      .then((data) => setState({ key, data }))
+      .then((data) => {
+        if (!controller.signal.aborted) setState({ key, data });
+      })
       .catch((error: unknown) => {
         if (controller.signal.aborted) return;
         setState({ key, error: error instanceof Error ? error : new Error(String(error)) });
