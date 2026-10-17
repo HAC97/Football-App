@@ -64,16 +64,16 @@ describe('normalizeStandings', () => {
   const entry = (rank: number, name: string, note?: { color: string; description: string }) => ({
     team: { id: String(rank), displayName: name, abbreviation: name.slice(0, 3).toUpperCase(), logos: [{ href: `${name}.png` }] },
     note,
-    stats: [stat('rank', rank), stat('points', 30 - rank), stat('gamesPlayed', 10), stat('wins', 5), stat('ties', 1), stat('losses', 4), stat('pointsFor', 12), stat('pointsAgainst', 8), stat('pointDifferential', 4)],
+    stats: [stat('rank', rank), stat('points', 30 - rank), stat('gamesPlayed', 10), stat('pointDifferential', 4)],
   });
 
-  it('sorts by rank, reads every column and keeps the qualification zone', () => {
+  it('sorts by rank, reads the shown columns and keeps the qualification zone', () => {
     const [group] = normalizeStandings({
       children: [{ name: 'LALIGA', standings: { entries: [entry(2, 'Bravo'), entry(1, 'Alfa', { color: '#81D6AC', description: 'Champions League' })] } }],
     });
     expect(group.name).toBe('LALIGA');
     expect(group.entries.map((e) => e.team.name)).toEqual(['Alfa', 'Bravo']);
-    expect(group.entries[0]).toMatchObject({ points: 29, played: 10, wins: 5, draws: 1, losses: 4, goalsFor: 12, goalsAgainst: 8, goalDifference: 4 });
+    expect(group.entries[0]).toMatchObject({ points: 29, played: 10, goalDifference: 4 });
     expect(group.entries[0].zone).toEqual({ color: '#81D6AC', description: 'Champions League' });
     expect(group.entries[1].zone).toBeUndefined();
     expect(group.entries[0].team.logo).toBe('Alfa.png');

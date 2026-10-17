@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { MapPin, X } from 'lucide-react';
+import { ArrowDown, ArrowLeftRight, ArrowUp, MapPin, X } from 'lucide-react';
 import { Crest, LeagueLogo } from './Crest';
 import { Scoreboard } from './Scoreboard';
 import { useFetch } from '../hooks/useFetch';
@@ -21,17 +21,11 @@ interface Props {
   onClose: () => void;
 }
 
-const EVENT_ICON: Record<TimelineEvent['kind'], string> = {
-  goal: '',
-  'own-goal': '',
-  'penalty-goal': '',
-  'penalty-miss': '✕',
-  yellow: '',
-  red: '',
-  sub: '⇄',
+/** Cards and the ball are drawn in CSS (Lucide has no football pictograms); everything else uses Lucide. */
+const EVENT_GLYPH: Partial<Record<TimelineEvent['kind'], ReactNode>> = {
+  'penalty-miss': <X size={14} />,
+  sub: <ArrowLeftRight size={14} />,
   var: 'VAR',
-  period: '',
-  other: '',
 };
 
 const EVENT_LABEL: Record<TimelineEvent['kind'], string> = {
@@ -60,8 +54,9 @@ function Timeline({ events }: { events: TimelineEvent[] }) {
             <span className="timeline__body">
               <strong>
                 {e.kind === 'sub' && (
-                  <span className="sub-in" aria-label="Entra">
-                    ▲{' '}
+                  <span className="sub-in">
+                    <ArrowUp size={12} aria-hidden="true" />
+                    <span className="sr-only">Entra:</span>{' '}
                   </span>
                 )}
                 {e.player}
@@ -70,7 +65,8 @@ function Timeline({ events }: { events: TimelineEvent[] }) {
               {e.kind === 'sub' ? (
                 e.detail && (
                   <small className="sub-out">
-                    <span aria-label="Sale">▼</span> {e.detail}
+                    <ArrowDown size={12} aria-hidden="true" />
+                    <span className="sr-only">Sale:</span> {e.detail}
                   </small>
                 )
               ) : (
@@ -82,7 +78,7 @@ function Timeline({ events }: { events: TimelineEvent[] }) {
             </span>
             <span className="timeline__min">
               <span className="timeline__icon" data-kind={e.kind} aria-hidden="true">
-                {EVENT_ICON[e.kind]}
+                {EVENT_GLYPH[e.kind]}
               </span>
               {e.minute}
             </span>
@@ -90,6 +86,19 @@ function Timeline({ events }: { events: TimelineEvent[] }) {
         ),
       )}
     </ol>
+  );
+}
+
+function Scorers({ goals }: { goals: TimelineEvent[] }) {
+  return (
+    <ul className="scorers">
+      {goals.map((g) => (
+        <li key={g.id}>
+          {g.player}
+          {g.kind === 'own-goal' ? ' (e/c)' : g.kind === 'penalty-goal' ? ' (p)' : ''} {g.minute}
+        </li>
+      ))}
+    </ul>
   );
 }
 
@@ -219,6 +228,18 @@ export function MatchModal({ match, league, meta, now, onClose }: Props) {
   ].filter(Boolean)) as { id: Tab; label: string }[];
   const tab = tabs.find((t) => t.id === picked)?.id ?? tabs[0]?.id;
 
+  // WAI-ARIA tabs: only the selected tab is in the Tab order, arrows/Home/End move between tabs.
+  const onTabKey = (e: KeyboardEvent) => {
+    const i = tabs.findIndex((t) => t.id === tab);
+    const keys: Record<string, number> = { ArrowRight: i + 1, ArrowLeft: i - 1, Home: 0, End: tabs.length - 1 };
+    const to = keys[e.key];
+    if (to === undefined) return;
+    e.preventDefault();
+    const next = tabs[(to + tabs.length) % tabs.length];
+    setPicked(next.id);
+    document.getElementById(`tab-${next.id}`)?.focus();
+  };
+
   const goals = (side: 'home' | 'away') => events.filter((e) => e.side === side && isGoal(e));
   const kickoff = new Date(match.date);
 
@@ -243,14 +264,7 @@ export function MatchModal({ match, league, meta, now, onClose }: Props) {
             <h2 id="modal-title">
               {match.homeTeam.name} <span className="sr-only">contra {match.awayTeam.name}</span>
             </h2>
-            <ul className="scorers">
-              {goals('home').map((g) => (
-                <li key={g.id}>
-                  {g.player}
-                  {g.kind === 'own-goal' ? ' (e/c)' : g.kind === 'penalty-goal' ? ' (p)' : ''} {g.minute}
-                </li>
-              ))}
-            </ul>
+            <Scorers goals={goals('home')} />
           </div>
           <div className="modal__center">
             {match.status === 'SCHEDULED' ? <span className="modal__kickoff">{format(kickoff, 'HH:mm')}</span> : <Scoreboard match={match} size="lg" />}
@@ -262,14 +276,7 @@ export function MatchModal({ match, league, meta, now, onClose }: Props) {
           <div className="modal__team">
             <Crest team={match.awayTeam} size={64} />
             <h2>{match.awayTeam.name}</h2>
-            <ul className="scorers">
-              {goals('away').map((g) => (
-                <li key={g.id}>
-                  {g.player}
-                  {g.kind === 'own-goal' ? ' (e/c)' : g.kind === 'penalty-goal' ? ' (p)' : ''} {g.minute}
-                </li>
-              ))}
-            </ul>
+            <Scorers goals={goals('away')} />
           </div>
         </div>
 
@@ -306,14 +313,14 @@ export function MatchModal({ match, league, meta, now, onClose }: Props) {
 
           {tab && (
             <>
-              <div className="tabs" role="tablist" aria-label="Detalle del partido">
+              <div className="tabs" role="tablist" aria-label="Detalle del partido" onKeyDown={onTabKey}>
                 {tabs.map((t) => (
                   <button key={t.id} role="tab" id={`tab-${t.id}`} aria-selected={tab === t.id} aria-controls="tabpanel" tabIndex={tab === t.id ? 0 : -1} onClick={() => setPicked(t.id)}>
                     {t.label}
                   </button>
                 ))}
               </div>
-              <div id="tabpanel" role="tabpanel" aria-labelledby={`tab-${tab}`}>
+              <div id="tabpanel" role="tabpanel" aria-labelledby={`tab-${tab}`} tabIndex={0}>
                 {tab === 'resumen' && <Timeline events={events} />}
                 {tab === 'alineaciones' && <Lineups lineups={lineups} match={match} />}
                 {tab === 'estadisticas' && <Stats rows={stats} match={match} />}

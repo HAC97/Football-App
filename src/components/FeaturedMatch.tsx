@@ -3,7 +3,7 @@ import { es } from 'date-fns/locale';
 import { MapPin } from 'lucide-react';
 import { Crest } from './Crest';
 import { Scoreboard } from './Scoreboard';
-import { statusText } from '../lib/match';
+import { scoreLabel, statusText } from '../lib/match';
 import { capitalize } from '../lib/date';
 import type { League, Match } from '../types';
 
@@ -41,9 +41,15 @@ export function FeaturedMatch({ match, league, now, onOpen }: Props) {
         ? `Empieza en ${formatDistanceStrict(kickoff, now, { locale: es })}`
         : 'Por comenzar'
       : statusText(match, now);
+  const score = scoreLabel(match);
 
   return (
-    <button className="featured" data-live={live || undefined} onClick={() => onOpen(match)} aria-label={`Partido destacado: ${match.homeTeam.name} contra ${match.awayTeam.name}. Ver detalle`}>
+    <button
+      className="featured"
+      data-live={live || undefined}
+      onClick={() => onOpen(match)}
+      aria-label={`Partido destacado: ${match.homeTeam.name} contra ${match.awayTeam.name}, ${score ? `${score}, ` : ''}${note}. Ver detalle`}
+    >
       <Pitch />
       <span className="featured__top">
         <span className={live ? 'live-pill' : 'featured__eyebrow'}>

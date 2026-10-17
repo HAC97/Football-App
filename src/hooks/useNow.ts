@@ -1,12 +1,11 @@
 import { useEffect, useState } from 'react';
 
-/** Current time, refreshed every second while `active` (used for the live match clock). */
-export function useNow(active: boolean): number {
+/** Current time, refreshed every `intervalMs` (every second for the live clock, slower for kickoff countdowns). */
+export function useNow(intervalMs: number): number {
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
-    if (!active) return;
-    const id = setInterval(() => setNow(Date.now()), 1000);
+    const id = setInterval(() => setNow(Date.now()), intervalMs);
     return () => clearInterval(id);
-  }, [active]);
+  }, [intervalMs]);
   return now;
 }

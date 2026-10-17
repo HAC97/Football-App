@@ -1,4 +1,4 @@
-import { Moon, Sun } from 'lucide-react';
+import { LayoutGrid, Moon, Sun } from 'lucide-react';
 import { LeagueLogo } from './Crest';
 import type { League, LeagueMeta } from '../types';
 
@@ -24,7 +24,7 @@ export function LeagueNav({ leagues, meta, active, liveByLeague, onSelect, theme
         <li>
           <button className="nav__item" aria-pressed={active === null} onClick={() => onSelect(null)}>
             <span className="league-logo league-logo--fallback league-logo--all" aria-hidden="true">
-              ∗
+              <LayoutGrid size={14} />
             </span>
             <span className="nav__label">Todas las ligas</span>
           </button>

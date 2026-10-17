@@ -70,12 +70,32 @@ export function groupByLeague(matches: Match[], leagues: League[]): LeagueGroup[
     .map(({ league, matches: ms }) => ({ league, matches: ms }));
 }
 
+/** ESPN can keep a delayed match as scheduled for a while after its kickoff time. */
+const LATE_KICKOFF_MS = 3 * 3600_000;
+
+/** Spoken score, e.g. "2 a 1, penales 4 a 3". Undefined when there is no score to read. */
+export function scoreLabel(m: Match): string | undefined {
+  if (!m.score || isNotPlayed(m)) return undefined;
+  const pens = m.penalties ? `, penales ${m.penalties.home} a ${m.penalties.away}` : '';
+  return `${m.score.home} a ${m.score.away}${pens}`;
+}
+
+/**
+ * When to start polling today's scores: 0 (right away) if a match is live, else the next kickoff,
+ * including kickoffs up to 3 h late. Undefined when no match can still change.
+ */
+export function pollStartAt(matches: Match[], now: number): number | undefined {
+  if (matches.some((m) => m.status === 'LIVE')) return 0;
+  const kickoffs = matches.filter((m) => m.status === 'SCHEDULED').map((m) => new Date(m.date).getTime()).filter((t) => t >= now - LATE_KICKOFF_MS);
+  return kickoffs.length > 0 ? Math.min(...kickoffs) : undefined;
+}
+
 /** Featured match: a live one, else the next kickoff, else the most recent result. */
 export function pickFeatured(matches: Match[], now: number = Date.now()): Match | undefined {
   const live = matches.find((m) => m.status === 'LIVE');
   if (live) return live;
   const upcoming = matches
-    .filter((m) => m.status === 'SCHEDULED' && new Date(m.date).getTime() >= now - 3 * 3600_000)
+    .filter((m) => m.status === 'SCHEDULED' && new Date(m.date).getTime() >= now - LATE_KICKOFF_MS)
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
   if (upcoming[0]) return upcoming[0];
   return matches

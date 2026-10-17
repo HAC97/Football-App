@@ -1,7 +1,7 @@
 import { format } from 'date-fns';
 import { Crest } from './Crest';
 import { Scoreboard } from './Scoreboard';
-import { isNotPlayed, statusText } from '../lib/match';
+import { isNotPlayed, scoreLabel, statusText } from '../lib/match';
 import type { Match } from '../types';
 
 interface Props {
@@ -17,13 +17,15 @@ export function MatchRow({ match, now, onOpen }: Props) {
   const homeWon = finished && !!s && (s.home > s.away || (!!match.penalties && s.home === s.away && match.penalties.home > match.penalties.away));
   const awayWon = finished && !!s && (s.away > s.home || (!!match.penalties && s.home === s.away && match.penalties.away > match.penalties.home));
   const kickoff = format(new Date(match.date), 'HH:mm');
+  const score = scoreLabel(match);
+  const state = live ? `en vivo, ${statusText(match, now)}` : match.status === 'SCHEDULED' ? `a las ${kickoff}` : statusText(match, now).toLowerCase();
 
   return (
     <button
       className="row"
       data-status={match.status}
       onClick={() => onOpen(match)}
-      aria-label={`${match.homeTeam.name} contra ${match.awayTeam.name}, ${live ? 'en vivo' : match.status === 'FINISHED' ? 'finalizado' : `a las ${kickoff}`}. Ver detalle`}
+      aria-label={`${match.homeTeam.name} contra ${match.awayTeam.name}, ${score ? `${score}, ` : ''}${state}. Ver detalle`}
     >
       <span className="row__status">
         {live ? (

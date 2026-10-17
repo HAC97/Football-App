@@ -26,7 +26,7 @@ npm run dev
 - **Partido destacado**: el que está en vivo; si no hay, el próximo; si no, el último resultado.
 - **Tira de días** (7 atrás, 14 adelante) con punto en los días con partidos y punto rojo si hay uno en vivo. Al abrir, elige hoy o el día más cercano con partidos.
 - **Filtros** por liga y por estado (en vivo, próximos, finalizados). La liga y el tema se recuerdan.
-- **Reloj en vivo** que avanza cada segundo entre consultas; consulta solo los partidos de hoy cada 30 s y solo mientras haya algo en vivo y la pestaña esté visible.
+- **Reloj en vivo** que avanza cada segundo entre consultas; consulta solo los partidos de hoy cada 30 s, desde el próximo inicio o mientras haya algo en vivo, y solo con la pestaña visible.
 - **Detalle del partido**: resumen con goles, tarjetas y cambios; alineaciones dibujadas en la cancha con suplentes; estadísticas comparadas.
 - **Posiciones** con zonas de clasificación (colores de ESPN) y grupos donde corresponde.
 - **Móvil**: chips de ligas arriba y pestañas Partidos / Tabla abajo.

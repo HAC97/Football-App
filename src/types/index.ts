@@ -26,7 +26,6 @@ export interface Match {
   displayClock?: string;
   period?: number;
   fetchedAt?: number;
-  phase?: string;
   venue?: string;
 }
 
@@ -46,11 +45,6 @@ export interface StandingTeam {
   team: Team;
   played: number;
   points: number;
-  wins: number;
-  draws: number;
-  losses: number;
-  goalsFor: number;
-  goalsAgainst: number;
   goalDifference: number;
   /** Qualification / relegation zone from ESPN, when it defines one. */
   zone?: { color: string; description: string };
