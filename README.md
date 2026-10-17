@@ -18,7 +18,7 @@ npm run dev
 | `npm run dev` | Servidor de desarrollo |
 | `npm run build` | Chequeo de tipos y build de producción |
 | `npm run lint` | ESLint |
-| `npm test` | Tests unitarios (offline, ~1 s) |
+| `npm test` | Tests unitarios y de interfaz (jsdom + Testing Library, offline, ~5 s) |
 | `npm run eval` | Evals contra la API real de ESPN (necesita red, ~15 s) |
 
 ## Qué hace la app
@@ -42,6 +42,7 @@ src/
   components/           UI
   styles/               base.css (tokens) y app.css
   __fixtures__/         respuestas reales de ESPN recortadas, usadas por los tests
+  test/                 setup de jsdom para los tests de interfaz (polyfill de <dialog>)
 evals/espn.eval.ts      contrato contra la API real
 ```
 
