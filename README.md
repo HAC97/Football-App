@@ -58,3 +58,5 @@ evals/espn.eval.ts      contrato contra la API real
 ```bash
 npm run lint && npm test && npm run build && npm run eval
 ```
+
+CI (`.github/workflows/ci.yml`): en cada PR y push a `main` corre `lint`, `test` y `build`. Los evals contra ESPN corren cada noche (03:00 UTC) y a mano desde la pestaña Actions; no bloquean PRs porque dependen de la red.
