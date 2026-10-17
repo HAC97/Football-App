@@ -25,7 +25,6 @@ interface RawCompetitor {
 export interface RawEvent {
   id: string;
   date: string;
-  season?: { slug?: string };
   status: {
     clock?: number;
     displayClock?: string;
@@ -35,7 +34,6 @@ export interface RawEvent {
   competitions: {
     competitors: RawCompetitor[];
     venue?: { fullName?: string };
-    series?: { title?: string };
   }[];
 }
 
@@ -96,7 +94,6 @@ export function normalizeEvent(event: RawEvent, league: League, fetchedAt: numbe
     displayClock: status === 'LIVE' ? event.status.displayClock : undefined,
     period: status === 'LIVE' ? event.status.period : undefined,
     fetchedAt: status === 'LIVE' ? fetchedAt : undefined,
-    phase: competition.series?.title ?? event.season?.slug ?? '',
     venue: competition.venue?.fullName,
   };
 }
@@ -112,11 +109,6 @@ export function normalizeStandings(raw: RawStandings): StandingsGroup[] {
         team,
         played: stat('gamesPlayed'),
         points: stat('points'),
-        wins: stat('wins'),
-        draws: stat('ties'),
-        losses: stat('losses'),
-        goalsFor: stat('pointsFor'),
-        goalsAgainst: stat('pointsAgainst'),
         goalDifference: stat('pointDifferential'),
         zone: entry.note?.color && entry.note.description ? { color: entry.note.color, description: translateZone(entry.note.description) } : undefined,
       };

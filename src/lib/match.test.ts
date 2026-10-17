@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { makeMatch } from '../__fixtures__/factory';
 import { leagues } from '../config/leagues';
-import { filterByStatus, groupByLeague, liveMinuteLabel, mergeMatches, pickFeatured, statusText } from './match';
+import { filterByStatus, groupByLeague, liveMinuteLabel, mergeMatches, pickFeatured, pollStartAt, scoreLabel, statusText } from './match';
 
 const live = (o = {}) =>
   makeMatch({ status: 'LIVE', statusName: 'STATUS_FIRST_HALF', clockSeconds: 1509, displayClock: "26'", period: 1, fetchedAt: 1_000_000, ...o });
@@ -126,5 +126,37 @@ describe('filterByStatus', () => {
     const list = [makeMatch({ id: '1' }), makeMatch({ id: '2', status: 'LIVE' })];
     expect(filterByStatus(list, 'ALL')).toHaveLength(2);
     expect(filterByStatus(list, 'LIVE').map((m) => m.id)).toEqual(['2']);
+  });
+});
+
+describe('pollStartAt', () => {
+  const now = Date.parse('2026-09-28T12:00:00Z');
+
+  it('starts right away while a match is live', () => {
+    expect(pollStartAt([makeMatch({ status: 'LIVE' }), makeMatch({ id: '2', date: '2026-09-28T20:00:00Z' })], now)).toBe(0);
+  });
+
+  it('waits for the next kickoff when nothing is live yet', () => {
+    const list = [makeMatch({ id: '1', date: '2026-09-28T19:00:00Z' }), makeMatch({ id: '2', date: '2026-09-28T16:00:00Z' })];
+    expect(pollStartAt(list, now)).toBe(Date.parse('2026-09-28T16:00:00Z'));
+  });
+
+  it('keeps polling a kickoff that ESPN still reports as scheduled, but not one stale for over 3 h', () => {
+    expect(pollStartAt([makeMatch({ date: '2026-09-28T10:00:00Z' })], now)).toBe(Date.parse('2026-09-28T10:00:00Z'));
+    expect(pollStartAt([makeMatch({ date: '2026-09-28T08:00:00Z' })], now)).toBeUndefined();
+  });
+
+  it('never polls when every match is finished', () => {
+    expect(pollStartAt([makeMatch({ status: 'FINISHED', score: { home: 1, away: 0 } })], now)).toBeUndefined();
+  });
+});
+
+describe('scoreLabel', () => {
+  it('reads the score and the shootout', () => {
+    expect(scoreLabel(makeMatch({ status: 'FINISHED', score: { home: 1, away: 1 }, penalties: { home: 4, away: 3 } }))).toBe('1 a 1, penales 4 a 3');
+  });
+
+  it('has nothing to read for a postponed match', () => {
+    expect(scoreLabel(makeMatch({ status: 'FINISHED', statusName: 'STATUS_POSTPONED', score: { home: 0, away: 0 } }))).toBeUndefined();
   });
 });

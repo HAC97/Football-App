@@ -10,7 +10,7 @@ import { EmptyDay, ErrorState, MatchesSkeleton } from './components/States';
 import { leagueById, leagues } from './config/leagues';
 import { useMatches } from './hooks/useMatches';
 import { useNow } from './hooks/useNow';
-import { WINDOW_PAST_DAYS, dayKey, dayWindow, pickDefaultDay } from './lib/date';
+import { dayKey, dayWindow, pickDefaultDay } from './lib/date';
 import { filterByStatus, groupByLeague, pickFeatured, type StatusFilter } from './lib/match';
 
 type Theme = 'dark' | 'light';
@@ -41,22 +41,19 @@ const STATUS_TABS: { id: StatusFilter; label: string }[] = [
   { id: 'FINISHED', label: 'Finalizados' },
 ];
 
-function initialTheme(): Theme {
-  const saved = store.get('fulltime-theme');
-  if (saved === 'dark' || saved === 'light') return saved;
-  return window.matchMedia?.('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
-}
-
 function App() {
-  const { matches, meta, loading, error, failed, reload } = useMatches();
-  const [theme, setTheme] = useState<Theme>(initialTheme);
+  const { matches, meta, loading, error, failed, hasLive, reload } = useMatches();
+  const now = useNow(hasLive ? 1000 : 30_000);
+  // index.html resolves the theme (saved choice, else system) before React mounts, to avoid a flash.
+  const [theme, setTheme] = useState<Theme>(() => (document.documentElement.dataset.theme === 'light' ? 'light' : 'dark'));
   const [activeLeague, setActiveLeague] = useState<string | null>(() => {
     const saved = store.get('fulltime-league');
     return saved && leagueById(saved) ? saved : null;
   });
   const [standingsPick, setStandingsPick] = useState<string | null>(null);
-  const [days] = useState(() => dayWindow(new Date()));
-  const todayKey = dayKey(days[WINDOW_PAST_DAYS]);
+  // Follows `now`, so a tab left open past midnight moves "Hoy" to the new day.
+  const todayKey = dayKey(new Date(now));
+  const days = useMemo(() => dayWindow(new Date(`${todayKey}T00:00`)), [todayKey]);
   const [pickedDay, setSelectedDay] = useState<string | null>(null);
   const [status, setStatus] = useState<StatusFilter>('ALL');
   const [view, setView] = useState<MobileView>('matches');
@@ -80,8 +77,6 @@ function App() {
   }, []);
 
   const byLeague = useMemo(() => (activeLeague ? matches.filter((m) => m.leagueId === activeLeague) : matches), [matches, activeLeague]);
-  const hasLive = useMemo(() => matches.some((m) => m.status === 'LIVE'), [matches]);
-  const now = useNow(hasLive);
 
   const liveByLeague = useMemo(() => {
     const out: Record<string, number> = {};

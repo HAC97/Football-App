@@ -1,7 +1,6 @@
 import { useMemo } from 'react';
 import { ChevronDown } from 'lucide-react';
-import { Crest } from './Crest';
-import { LeagueLogo } from './Crest';
+import { Crest, LeagueLogo } from './Crest';
 import { fetchStandings } from '../services/espn';
 import { useFetch } from '../hooks/useFetch';
 import type { League, LeagueMeta } from '../types';
@@ -51,7 +50,7 @@ export function Standings({ leagues, meta, leagueId, onPick }: Props) {
       )}
 
       {error && (
-        <div className="state state--compact">
+        <div className="state state--compact" role="alert">
           <p>No pudimos cargar la tabla.</p>
           <button className="btn" onClick={reload}>
             Reintentar

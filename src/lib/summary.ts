@@ -65,8 +65,7 @@ const STAT_DEFS: { key: string; label: string; suffix?: string }[] = [
 ];
 
 /**
- * ESPN keeps stats per team under `boxscore.teams[].statistics`.
- * (The old code read `boxscore.statistics`, which does not exist, so no stats ever rendered.)
+ * ESPN keeps stats per team under `boxscore.teams[].statistics` (there is no `boxscore.statistics`).
  * Rows where both sides have no value are dropped.
  */
 export function parseStats(summary: RawSummary): StatRow[] {

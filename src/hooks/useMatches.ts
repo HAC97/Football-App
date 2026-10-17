@@ -3,7 +3,7 @@ import { addDays } from 'date-fns';
 import { leagues } from '../config/leagues';
 import { fetchToday, fetchWindow } from '../services/espn';
 import { WINDOW_FUTURE_DAYS, WINDOW_PAST_DAYS } from '../lib/date';
-import { mergeMatches } from '../lib/match';
+import { mergeMatches, pollStartAt } from '../lib/match';
 import type { LeagueMeta, Match } from '../types';
 
 const POLL_MS = 30_000;
@@ -16,6 +16,8 @@ export interface MatchesState {
   error: boolean;
   /** Some leagues failed: what loaded is still shown, with a notice. */
   failed: string[];
+  /** At least one match is being played right now. */
+  hasLive: boolean;
   reload: () => void;
 }
 
@@ -25,6 +27,8 @@ export function useMatches(): MatchesState {
   const [failed, setFailed] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [attempt, setAttempt] = useState(0);
+  /** When `matches` last changed; the reference time for deciding what can still kick off. */
+  const [updatedAt, setUpdatedAt] = useState(() => Date.now());
 
   useEffect(() => {
     const controller = new AbortController();
@@ -33,6 +37,7 @@ export function useMatches(): MatchesState {
       .then((res) => {
         if (controller.signal.aborted) return;
         setMatches(res.matches);
+        setUpdatedAt(Date.now());
         setMeta(res.meta);
         setFailed(res.failed);
         setLoading(false);
@@ -46,31 +51,42 @@ export function useMatches(): MatchesState {
   }, [attempt]);
 
   const hasLive = useMemo(() => matches.some((m) => m.status === 'LIVE'), [matches]);
+  const pollFrom = useMemo(() => pollStartAt(matches, updatedAt), [matches, updatedAt]);
 
   useEffect(() => {
-    if (!hasLive) return;
+    if (pollFrom === undefined) return;
     let controller = new AbortController();
+    let interval: number | undefined;
     const tick = () => {
-      if (document.hidden) return;
+      if (document.hidden || Date.now() < pollFrom) return;
       controller.abort();
       controller = new AbortController();
       fetchToday(leagues, controller.signal)
-        .then((res) => setMatches((prev) => mergeMatches(prev, res.matches)))
+        .then((res) => {
+          setMatches((prev) => mergeMatches(prev, res.matches));
+          setUpdatedAt(Date.now());
+        })
         .catch(() => {});
     };
-    const id = setInterval(tick, POLL_MS);
+    // First poll at kickoff (or one interval from now if something is already live); setTimeout caps at ~24.8 days.
+    const delay = Math.min(Math.max(pollFrom - Date.now(), POLL_MS), 2 ** 31 - 1);
+    const start = window.setTimeout(() => {
+      tick();
+      interval = window.setInterval(tick, POLL_MS);
+    }, delay);
     document.addEventListener('visibilitychange', tick);
     return () => {
-      clearInterval(id);
+      clearTimeout(start);
+      clearInterval(interval);
       document.removeEventListener('visibilitychange', tick);
       controller.abort();
     };
-  }, [hasLive]);
+  }, [pollFrom]);
 
   const reload = useCallback(() => {
     setLoading(true);
     setAttempt((n) => n + 1);
   }, []);
 
-  return { matches, meta, loading, error: !loading && matches.length === 0 && failed.length === leagues.length, failed, reload };
+  return { matches, meta, loading, error: !loading && matches.length === 0 && failed.length === leagues.length, failed, hasLive, reload };
 }

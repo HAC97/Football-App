@@ -238,7 +238,6 @@
 }
 .league-logo--all {
   --c: var(--text-3);
-  font-size: 16px;
 }
 .nav__item[aria-pressed='true'] .league-logo--fallback {
   background: rgba(127, 127, 127, 0.25);
@@ -268,7 +267,7 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  min-height: 40px;
+  min-height: 44px;
   padding: 0 14px;
   border-radius: 99px;
   background: var(--surface);
@@ -285,8 +284,8 @@
 }
 
 .icon-btn {
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   display: inline-grid;
   place-items: center;
   border-radius: 50%;
@@ -586,7 +585,7 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  min-height: 42px;
+  min-height: 44px;
   padding: 0 14px;
   color: var(--text-2);
   font-weight: 500;
@@ -1004,7 +1003,7 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  min-height: 42px;
+  min-height: 44px;
   padding: 0 18px;
   border-radius: 99px;
   border: 1px solid var(--line);
@@ -1025,7 +1024,7 @@
   opacity: 0.9;
 }
 .btn--small {
-  min-height: 34px;
+  min-height: 44px;
   padding: 0 12px;
   font-size: 13px;
 }
@@ -1294,7 +1293,11 @@
 }
 .sub-in {
   color: var(--turf);
-  font-size: 10px;
+}
+.sub-in svg,
+.sub-out svg {
+  display: inline-block;
+  vertical-align: -1px;
 }
 .timeline__body small.sub-out {
   color: var(--loss);
@@ -1452,7 +1455,7 @@
   margin-bottom: 12px;
 }
 .segmented button {
-  min-height: 40px;
+  min-height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1534,7 +1537,7 @@
 }
 .pitch[data-side='away'] .player__shirt {
   background: var(--side-away);
-  color: #fff;
+  color: var(--side-away-ink);
 }
 .player[data-out] .player__shirt {
   opacity: 0.75;
