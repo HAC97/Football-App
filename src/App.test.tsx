@@ -105,6 +105,21 @@ describe('App: match list', () => {
   });
 });
 
+describe('App: data freshness', () => {
+  it('shows the age of the data while a match is live, and nothing otherwise', async () => {
+    const liveMatch = makeMatch({ id: 'l', status: 'LIVE', statusName: 'STATUS_IN_PROGRESS', date: at(0, 11), score: { home: 0, away: 0 }, homeTeam: team('a', 'Alpha'), awayTeam: team('b', 'Beta') });
+    api.fetchWindow.mockResolvedValue(loaded([liveMatch]));
+    render(<App />);
+    expect(await screen.findByText(/Actualizado hace \d+ s/)).toBeTruthy();
+  });
+
+  it('does not show it when nothing is live', async () => {
+    render(<App />);
+    await screen.findByRole('button', { name: rowName('Valencia', 'Sociedad') });
+    expect(screen.queryByText(/Actualizado hace/)).toBeNull();
+  });
+});
+
 describe('App: loading failures', () => {
   it('shows a retry when every league fails, and recovers on retry', async () => {
     const user = userEvent.setup();

@@ -109,3 +109,17 @@ export function mergeMatches(base: Match[], fresh: Match[]): Match[] {
   for (const m of fresh) byId.set(m.id, m);
   return [...byId.values()].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 }
+
+export const POLL_MS = 30_000;
+const MAX_POLL_MS = 300_000;
+
+/** Wait before the next poll: the normal rate for the first miss, then doubling up to 5 min so a down API is not hammered. */
+export const pollDelay = (failures: number): number => Math.min(POLL_MS * 2 ** Math.max(0, failures - 1), MAX_POLL_MS);
+
+/** Age of the data for display: "12 s", "3 min", "2 h". */
+export function ageLabel(ms: number): string {
+  const s = Math.max(0, Math.floor(ms / 1000));
+  if (s < 60) return `${s} s`;
+  if (s < 3600) return `${Math.floor(s / 60)} min`;
+  return `${Math.floor(s / 3600)} h`;
+}

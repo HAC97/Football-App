@@ -3,10 +3,8 @@ import { addDays } from 'date-fns';
 import { leagues } from '../config/leagues';
 import { fetchToday, fetchWindow } from '../services/espn';
 import { WINDOW_FUTURE_DAYS, WINDOW_PAST_DAYS } from '../lib/date';
-import { mergeMatches, pollStartAt } from '../lib/match';
+import { mergeMatches, POLL_MS, pollDelay, pollStartAt } from '../lib/match';
 import type { LeagueMeta, Match } from '../types';
-
-const POLL_MS = 30_000;
 
 export interface MatchesState {
   matches: Match[];
@@ -18,6 +16,10 @@ export interface MatchesState {
   failed: string[];
   /** At least one match is being played right now. */
   hasLive: boolean;
+  /** When the data on screen was last confirmed by ESPN (ms). */
+  lastUpdated: number;
+  /** Polls in a row that got nothing back; 0 when healthy. */
+  pollFailures: number;
   reload: () => void;
 }
 
@@ -27,6 +29,7 @@ export function useMatches(): MatchesState {
   const [failed, setFailed] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [attempt, setAttempt] = useState(0);
+  const [pollFailures, setPollFailures] = useState(0);
   /** When `matches` last changed; the reference time for deciding what can still kick off. */
   const [updatedAt, setUpdatedAt] = useState(() => Date.now());
 
@@ -55,30 +58,50 @@ export function useMatches(): MatchesState {
 
   useEffect(() => {
     if (pollFrom === undefined) return;
+    const from = pollFrom;
     let controller = new AbortController();
-    let interval: number | undefined;
-    const tick = () => {
-      if (document.hidden || Date.now() < pollFrom) return;
+    let timer: number | undefined;
+    let failures = 0;
+    // setTimeout caps at ~24.8 days.
+    const schedule = (ms: number) => {
+      timer = window.setTimeout(poll, Math.min(ms, 2 ** 31 - 1));
+    };
+    function poll() {
+      clearTimeout(timer);
+      if (Date.now() < from) return schedule(from - Date.now());
+      if (document.hidden) return schedule(POLL_MS);
       controller.abort();
       controller = new AbortController();
-      fetchToday(leagues, controller.signal)
+      const mine = controller;
+      fetchToday(leagues, mine.signal)
         .then((res) => {
+          if (mine.signal.aborted) return;
+          // fetchAll never rejects: a total outage arrives as "every league failed".
+          if (res.failed.length === leagues.length) throw new Error('every league failed');
+          failures = 0;
+          setPollFailures(0);
           setMatches((prev) => mergeMatches(prev, res.matches));
           setUpdatedAt(Date.now());
         })
-        .catch(() => {});
+        .catch(() => {
+          if (mine.signal.aborted) return;
+          failures += 1;
+          setPollFailures(failures);
+        })
+        .finally(() => {
+          if (!mine.signal.aborted) schedule(pollDelay(failures));
+        });
+    }
+    // First poll at kickoff (or one interval from now if something is already live).
+    schedule(Math.max(from - Date.now(), POLL_MS));
+    // Coming back to the tab refreshes right away instead of waiting out the current delay.
+    const onVisible = () => {
+      if (!document.hidden) poll();
     };
-    // First poll at kickoff (or one interval from now if something is already live); setTimeout caps at ~24.8 days.
-    const delay = Math.min(Math.max(pollFrom - Date.now(), POLL_MS), 2 ** 31 - 1);
-    const start = window.setTimeout(() => {
-      tick();
-      interval = window.setInterval(tick, POLL_MS);
-    }, delay);
-    document.addEventListener('visibilitychange', tick);
+    document.addEventListener('visibilitychange', onVisible);
     return () => {
-      clearTimeout(start);
-      clearInterval(interval);
-      document.removeEventListener('visibilitychange', tick);
+      clearTimeout(timer);
+      document.removeEventListener('visibilitychange', onVisible);
       controller.abort();
     };
   }, [pollFrom]);
@@ -88,5 +111,5 @@ export function useMatches(): MatchesState {
     setAttempt((n) => n + 1);
   }, []);
 
-  return { matches, meta, loading, error: !loading && matches.length === 0 && failed.length === leagues.length, failed, hasLive, reload };
+  return { matches, meta, loading, error: !loading && matches.length === 0 && failed.length === leagues.length, failed, hasLive, lastUpdated: updatedAt, pollFailures, reload };
 }

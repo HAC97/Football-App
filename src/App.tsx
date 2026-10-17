@@ -6,6 +6,7 @@ import { FeaturedMatch } from './components/FeaturedMatch';
 import { LeagueGroup } from './components/LeagueGroup';
 import { MatchModal } from './components/MatchModal';
 import { Standings } from './components/Standings';
+import { UpdateStatus } from './components/UpdateStatus';
 import { EmptyDay, ErrorState, MatchesSkeleton } from './components/States';
 import { leagueById, leagues } from './config/leagues';
 import { useMatches } from './hooks/useMatches';
@@ -42,7 +43,7 @@ const STATUS_TABS: { id: StatusFilter; label: string }[] = [
 ];
 
 function App() {
-  const { matches, meta, loading, error, failed, hasLive, reload } = useMatches();
+  const { matches, meta, loading, error, failed, hasLive, lastUpdated, pollFailures, reload } = useMatches();
   const now = useNow(hasLive ? 1000 : 30_000);
   // index.html resolves the theme (saved choice, else system) before React mounts, to avoid a flash.
   const [theme, setTheme] = useState<Theme>(() => (document.documentElement.dataset.theme === 'light' ? 'light' : 'dark'));
@@ -135,6 +136,8 @@ function App() {
                 </button>
               </div>
             )}
+
+            <UpdateStatus lastUpdated={lastUpdated} failures={pollFailures} live={hasLive} now={now} />
 
             {featured && featuredLeague && <FeaturedMatch match={featured} league={featuredLeague} now={now} onOpen={(m) => setOpenId(m.id)} />}
 

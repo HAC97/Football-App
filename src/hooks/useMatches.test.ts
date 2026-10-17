@@ -181,3 +181,79 @@ describe('useMatches: polling', () => {
     expect(api.fetchToday).toHaveBeenCalledTimes(calls);
   });
 });
+
+describe('useMatches: stale data', () => {
+  const allFailed = result([], leagues.map((l) => l.id));
+
+  it('starts healthy, with lastUpdated at the load time', async () => {
+    api.fetchWindow.mockResolvedValue(result([live()]));
+    const { result: r } = await mount();
+    expect(r.current.pollFailures).toBe(0);
+    expect(r.current.lastUpdated).toBe(NOW);
+  });
+
+  it('counts a poll where every league failed as a miss, even though the request did not reject', async () => {
+    api.fetchWindow.mockResolvedValue(result([live()]));
+    api.fetchToday.mockResolvedValue(allFailed);
+    const { result: r } = await mount();
+
+    await advance(POLL_MS);
+    expect(r.current.pollFailures).toBe(1);
+    expect(r.current.lastUpdated).toBe(NOW);
+    expect(r.current.matches).toHaveLength(1);
+  });
+
+  it('backs off 30 s, 30 s, 60 s, 120 s while the API stays down', async () => {
+    api.fetchWindow.mockResolvedValue(result([live()]));
+    api.fetchToday.mockResolvedValue(allFailed);
+    const { result: r } = await mount();
+
+    const callsAfter = async (ms: number) => {
+      await advance(ms);
+      return api.fetchToday.mock.calls.length;
+    };
+    expect(await callsAfter(POLL_MS)).toBe(1);
+    expect(await callsAfter(POLL_MS - 1)).toBe(1);
+    expect(await callsAfter(1)).toBe(2); // 30 s after the first miss
+    expect(await callsAfter(2 * POLL_MS - 1)).toBe(2);
+    expect(await callsAfter(1)).toBe(3); // 60 s after the second
+    expect(await callsAfter(4 * POLL_MS)).toBe(4); // 120 s after the third
+    expect(r.current.pollFailures).toBe(4);
+  });
+
+  it('recovers: one good poll clears the failures, refreshes lastUpdated and returns to the normal rate', async () => {
+    api.fetchWindow.mockResolvedValue(result([live()]));
+    api.fetchToday.mockResolvedValueOnce(allFailed).mockResolvedValueOnce(allFailed).mockResolvedValue(result([live({ score: { home: 1, away: 1 } })]));
+    const { result: r } = await mount();
+
+    await advance(POLL_MS); // miss 1
+    await advance(POLL_MS); // miss 2
+    expect(r.current.pollFailures).toBe(2);
+    await advance(2 * POLL_MS); // backed off 60 s, then succeeds
+    expect(r.current.pollFailures).toBe(0);
+    expect(r.current.lastUpdated).toBe(NOW + 4 * POLL_MS);
+
+    const calls = api.fetchToday.mock.calls.length;
+    await advance(POLL_MS);
+    expect(api.fetchToday).toHaveBeenCalledTimes(calls + 1);
+  });
+
+  it('a poll where only some leagues fail still counts as healthy', async () => {
+    api.fetchWindow.mockResolvedValue(result([live()]));
+    api.fetchToday.mockResolvedValue(result([live({ score: { home: 2, away: 0 } })], ['pl']));
+    const { result: r } = await mount();
+
+    await advance(POLL_MS);
+    expect(r.current.pollFailures).toBe(0);
+    expect(r.current.lastUpdated).toBe(NOW + POLL_MS);
+  });
+
+  it('does not start a second request while one is still in flight', async () => {
+    api.fetchWindow.mockResolvedValue(result([live()]));
+    api.fetchToday.mockImplementation(() => new Promise(() => {}));
+    await mount();
+
+    await advance(10 * POLL_MS);
+    expect(api.fetchToday).toHaveBeenCalledTimes(1);
+  });
+});

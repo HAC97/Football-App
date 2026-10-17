@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { makeMatch } from '../__fixtures__/factory';
 import { leagues } from '../config/leagues';
-import { filterByStatus, groupByLeague, liveMinuteLabel, mergeMatches, pickFeatured, pollStartAt, scoreLabel, statusText } from './match';
+import { ageLabel, filterByStatus, groupByLeague, liveMinuteLabel, mergeMatches, pickFeatured, POLL_MS, pollDelay, pollStartAt, scoreLabel, statusText } from './match';
 
 const live = (o = {}) =>
   makeMatch({ status: 'LIVE', statusName: 'STATUS_FIRST_HALF', clockSeconds: 1509, displayClock: "26'", period: 1, fetchedAt: 1_000_000, ...o });
@@ -159,4 +159,32 @@ describe('scoreLabel', () => {
   it('has nothing to read for a postponed match', () => {
     expect(scoreLabel(makeMatch({ status: 'FINISHED', statusName: 'STATUS_POSTPONED', score: { home: 0, away: 0 } }))).toBeUndefined();
   });
+});
+
+describe('pollDelay', () => {
+  it('keeps the normal rate while healthy and after the first miss', () => {
+    expect(pollDelay(0)).toBe(POLL_MS);
+    expect(pollDelay(1)).toBe(POLL_MS);
+  });
+
+  it('doubles after each further miss', () => {
+    expect([2, 3, 4].map(pollDelay)).toEqual([60_000, 120_000, 240_000]);
+  });
+
+  it('never waits more than 5 minutes', () => {
+    expect(pollDelay(5)).toBe(300_000);
+    expect(pollDelay(500)).toBe(300_000);
+  });
+});
+
+describe('ageLabel', () => {
+  it.each([
+    [0, '0 s'],
+    [12_900, '12 s'],
+    [59_999, '59 s'],
+    [60_000, '1 min'],
+    [179_000, '2 min'],
+    [3_600_000, '1 h'],
+    [-5_000, '0 s'],
+  ])('%i ms -> %s', (ms, label) => expect(ageLabel(ms)).toBe(label));
 });
