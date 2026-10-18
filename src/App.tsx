@@ -13,27 +13,10 @@ import { useMatches } from './hooks/useMatches';
 import { useNow } from './hooks/useNow';
 import { dayKey, dayWindow, pickDefaultDay } from './lib/date';
 import { filterByStatus, groupByLeague, pickFeatured, type StatusFilter } from './lib/match';
+import { store } from './lib/storage';
 
 type Theme = 'dark' | 'light';
 type MobileView = 'matches' | 'table';
-
-const store = {
-  get(key: string): string | null {
-    try {
-      return localStorage.getItem(key);
-    } catch {
-      return null;
-    }
-  },
-  set(key: string, value: string | null) {
-    try {
-      if (value === null) localStorage.removeItem(key);
-      else localStorage.setItem(key, value);
-    } catch {
-      /* storage can be blocked; the choice just won't persist */
-    }
-  },
-};
 
 const STATUS_TABS: { id: StatusFilter; label: string }[] = [
   { id: 'ALL', label: 'Todos' },

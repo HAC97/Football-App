@@ -4,6 +4,7 @@ import { act, renderHook } from '@testing-library/react';
 import { makeMatch } from '../__fixtures__/factory';
 import { leagues } from '../config/leagues';
 import type { Match } from '../types';
+import { CACHE_KEY, CACHE_VERSION, serializeCache } from '../lib/cache';
 import { useMatches } from './useMatches';
 
 const api = vi.hoisted(() => ({ fetchWindow: vi.fn(), fetchToday: vi.fn() }));
@@ -30,6 +31,7 @@ beforeEach(() => {
   vi.useFakeTimers();
   vi.setSystemTime(NOW);
   setHidden(false);
+  localStorage.clear();
   api.fetchWindow.mockReset();
   api.fetchToday.mockReset();
   api.fetchToday.mockResolvedValue(result([]));
@@ -179,6 +181,128 @@ describe('useMatches: polling', () => {
     const calls = api.fetchToday.mock.calls.length;
     await advance(5 * POLL_MS);
     expect(api.fetchToday).toHaveBeenCalledTimes(calls);
+  });
+});
+
+describe('useMatches: cache', () => {
+  const stored = () => JSON.parse(localStorage.getItem(CACHE_KEY) ?? 'null');
+  const seed = (matches: Match[], savedAt = NOW - 10 * 60_000) => localStorage.setItem(CACHE_KEY, serializeCache(matches, { ll: { logo: 'cached.png' } }, savedAt));
+  const cachedLl = makeMatch({ id: 'c-ll', leagueId: 'll', status: 'FINISHED', statusName: 'STATUS_FULL_TIME', score: { home: 1, away: 0 }, date: new Date(NOW - 5 * HOUR).toISOString() });
+  const cachedPl = makeMatch({ id: 'c-pl', leagueId: 'pl', status: 'FINISHED', statusName: 'STATUS_FULL_TIME', score: { home: 2, away: 2 }, date: new Date(NOW - 6 * HOUR).toISOString() });
+  const freshLl = makeMatch({ id: 'f-ll', leagueId: 'll', status: 'FINISHED', statusName: 'STATUS_FULL_TIME', score: { home: 3, away: 1 }, date: new Date(NOW - 5 * HOUR).toISOString() });
+
+  it('paints from the cache right away, without waiting for the network', () => {
+    seed([cachedLl]);
+    api.fetchWindow.mockReturnValue(new Promise(() => {}));
+    const { result: r } = renderHook(() => useMatches());
+
+    expect(r.current.loading).toBe(false);
+    expect(r.current.matches).toEqual([cachedLl]);
+    expect(r.current.meta).toEqual({ ll: { logo: 'cached.png' } });
+    expect(r.current.lastUpdated).toBe(NOW - 10 * 60_000);
+  });
+
+  it('still fetches and replaces the cached data with the fresh answer', async () => {
+    seed([cachedLl]);
+    api.fetchWindow.mockResolvedValue(result([freshLl]));
+    const { result: r } = await mount();
+
+    expect(api.fetchWindow).toHaveBeenCalledTimes(1);
+    expect(r.current.matches).toEqual([freshLl]);
+    expect(r.current.lastUpdated).toBe(NOW);
+  });
+
+  it('shows the loading state, not stale data, when the cache is expired or unusable', () => {
+    api.fetchWindow.mockReturnValue(new Promise(() => {}));
+    for (const raw of [serializeCache([cachedLl], {}, NOW - 3 * HOUR), '{broken', JSON.stringify({ v: 999, savedAt: NOW, matches: [cachedLl] })]) {
+      localStorage.setItem(CACHE_KEY, raw);
+      const { result: r, unmount } = renderHook(() => useMatches());
+      expect(r.current.loading).toBe(true);
+      expect(r.current.matches).toEqual([]);
+      unmount();
+    }
+  });
+
+  it('saves a confirmed answer for the next visit', async () => {
+    api.fetchWindow.mockResolvedValue(result([freshLl]));
+    await mount();
+    expect(stored()).toMatchObject({ v: CACHE_VERSION, savedAt: NOW, matches: [freshLl] });
+  });
+
+  it('does not rewrite the cache just because it was read (keeps its original age)', async () => {
+    seed([cachedLl]);
+    api.fetchWindow.mockReturnValue(new Promise(() => {}));
+    renderHook(() => useMatches());
+    await advance(0);
+    expect(stored().savedAt).toBe(NOW - 10 * 60_000);
+  });
+
+  it('writes nothing until ESPN has answered', async () => {
+    api.fetchWindow.mockReturnValue(new Promise(() => {}));
+    renderHook(() => useMatches());
+    await advance(0);
+    expect(localStorage.getItem(CACHE_KEY)).toBeNull();
+  });
+
+  it('writes nothing when every league failed and there was no cache', async () => {
+    api.fetchWindow.mockResolvedValue(result([], leagues.map((l) => l.id)));
+    await mount();
+    expect(localStorage.getItem(CACHE_KEY)).toBeNull();
+  });
+
+  it('keeps showing the cache, and its true age, when every league is down', async () => {
+    seed([cachedLl]);
+    api.fetchWindow.mockResolvedValue(result([], leagues.map((l) => l.id)));
+    const { result: r } = await mount();
+
+    expect(r.current.error).toBe(false);
+    expect(r.current.matches).toEqual([cachedLl]);
+    expect(r.current.failed).toHaveLength(leagues.length);
+    expect(r.current.lastUpdated).toBe(NOW - 10 * 60_000);
+    expect(stored().matches).toEqual([cachedLl]); // an outage never overwrites good data
+  });
+
+  it('keeps showing the cache when the request itself rejects', async () => {
+    seed([cachedLl]);
+    api.fetchWindow.mockRejectedValue(new Error('offline'));
+    const { result: r } = await mount();
+    expect(r.current.error).toBe(false);
+    expect(r.current.matches).toEqual([cachedLl]);
+  });
+
+  it('keeps the cached matches of a league that failed and takes fresh ones for the rest', async () => {
+    seed([cachedLl, cachedPl]);
+    api.fetchWindow.mockResolvedValue(result([freshLl], ['pl']));
+    const { result: r } = await mount();
+
+    expect(r.current.matches.map((m) => m.id).sort()).toEqual(['c-pl', 'f-ll']);
+    expect(r.current.failed).toEqual(['pl']);
+  });
+
+  it('persists each confirmed poll so the next visit starts from the latest score', async () => {
+    api.fetchWindow.mockResolvedValue(result([live()]));
+    api.fetchToday.mockResolvedValue(result([live({ score: { home: 2, away: 0 } })]));
+    await mount();
+    await advance(POLL_MS);
+
+    expect(stored().matches[0].score).toEqual({ home: 2, away: 0 });
+    expect(stored().savedAt).toBe(NOW + POLL_MS);
+  });
+
+  it('works when storage is blocked', async () => {
+    const get = vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
+      throw new Error('blocked');
+    });
+    const set = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new Error('blocked');
+    });
+    api.fetchWindow.mockResolvedValue(result([freshLl]));
+    const { result: r } = renderHook(() => useMatches());
+    expect(r.current.loading).toBe(true);
+    await advance(0);
+    expect(r.current.matches).toEqual([freshLl]);
+    get.mockRestore();
+    set.mockRestore();
   });
 });
 

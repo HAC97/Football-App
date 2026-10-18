@@ -1,9 +1,11 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { addDays } from 'date-fns';
 import { leagues } from '../config/leagues';
 import { fetchToday, fetchWindow } from '../services/espn';
 import { WINDOW_FUTURE_DAYS, WINDOW_PAST_DAYS } from '../lib/date';
+import { CACHE_KEY, parseCache, serializeCache } from '../lib/cache';
 import { mergeMatches, POLL_MS, pollDelay, pollStartAt } from '../lib/match';
+import { store } from '../lib/storage';
 import type { LeagueMeta, Match } from '../types';
 
 export interface MatchesState {
@@ -24,14 +26,24 @@ export interface MatchesState {
 }
 
 export function useMatches(): MatchesState {
-  const [matches, setMatches] = useState<Match[]>([]);
-  const [meta, setMeta] = useState<Record<string, LeagueMeta>>({});
+  // The last good answer from this device paints the first frame; the request below still always runs and replaces it.
+  const [cached] = useState(() => parseCache(store.get(CACHE_KEY), Date.now()));
+  const [matches, setMatches] = useState<Match[]>(cached?.matches ?? []);
+  const [meta, setMeta] = useState<Record<string, LeagueMeta>>(cached?.meta ?? {});
   const [failed, setFailed] = useState<string[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!cached);
   const [attempt, setAttempt] = useState(0);
   const [pollFailures, setPollFailures] = useState(0);
-  /** When `matches` last changed; the reference time for deciding what can still kick off. */
-  const [updatedAt, setUpdatedAt] = useState(() => Date.now());
+  /** When ESPN last confirmed `matches`; the reference time for deciding what can still kick off. */
+  const [updatedAt, setUpdatedAt] = useState(() => cached?.savedAt ?? Date.now());
+  /** Set by a confirmed answer so the effect below persists it; a cache hydration or a failure never writes. */
+  const dirty = useRef(false);
+
+  useEffect(() => {
+    if (!dirty.current) return;
+    dirty.current = false;
+    store.set(CACHE_KEY, serializeCache(matches, meta, updatedAt));
+  }, [matches, meta, updatedAt]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -39,9 +51,14 @@ export function useMatches(): MatchesState {
     fetchWindow(leagues, addDays(today, -WINDOW_PAST_DAYS), addDays(today, WINDOW_FUTURE_DAYS), controller.signal)
       .then((res) => {
         if (controller.signal.aborted) return;
-        setMatches(res.matches);
-        setUpdatedAt(Date.now());
-        setMeta(res.meta);
+        // With every league down there is no news: keep what is on screen (cache included) instead of blanking it.
+        if (res.failed.length < leagues.length) {
+          dirty.current = true;
+          // A league that failed keeps its previous matches rather than vanishing.
+          setMatches((prev) => mergeMatches(prev.filter((m) => res.failed.includes(m.leagueId)), res.matches));
+          setMeta((prev) => ({ ...prev, ...res.meta }));
+          setUpdatedAt(Date.now());
+        }
         setFailed(res.failed);
         setLoading(false);
       })
@@ -80,6 +97,7 @@ export function useMatches(): MatchesState {
           if (res.failed.length === leagues.length) throw new Error('every league failed');
           failures = 0;
           setPollFailures(0);
+          dirty.current = true;
           setMatches((prev) => mergeMatches(prev, res.matches));
           setUpdatedAt(Date.now());
         })
