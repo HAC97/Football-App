@@ -1,9 +1,11 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { render, screen, within } from '@testing-library/react';
+import { act, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import summary from './__fixtures__/summary-laliga.json';
 import { makeMatch, team } from './__fixtures__/factory';
+import { CACHE_KEY, serializeCache } from './lib/cache';
+import { leagues } from './config/leagues';
 import type { Match } from './types';
 import App from './App';
 
@@ -102,6 +104,31 @@ describe('App: match list', () => {
     expect(screen.queryByRole('button', { name: rowName('Valencia', 'Sociedad') })).toBeNull();
     expect(screen.getByRole('button', { name: rowName('Chelsea', 'Tottenham') })).toBeTruthy();
     expect(localStorage.getItem('fulltime-league')).toBe('pl');
+  });
+});
+
+describe('App: cached first paint', () => {
+  it('shows the last visit right away while the network is still pending, then the fresh data', async () => {
+    localStorage.setItem(CACHE_KEY, serializeCache([scheduled], {}, Date.now() - 5 * 60_000));
+    let resolve!: (v: ReturnType<typeof loaded>) => void;
+    api.fetchWindow.mockReturnValue(new Promise((r) => (resolve = r)));
+    render(<App />);
+
+    expect(screen.getByRole('button', { name: rowName('Valencia', 'Sociedad') })).toBeTruthy();
+    expect(screen.queryByLabelText('Cargando partidos')).toBeNull();
+
+    await act(async () => resolve(loaded([tomorrow, scheduled])));
+    expect(screen.getByRole('button', { name: rowName('Valencia', 'Sociedad') })).toBeTruthy();
+  });
+
+  it('keeps the cached list and offers a retry when the network is down', async () => {
+    localStorage.setItem(CACHE_KEY, serializeCache([scheduled], {}, Date.now() - 5 * 60_000));
+    api.fetchWindow.mockResolvedValue(loaded([], leagues.map((l) => l.id)));
+    render(<App />);
+
+    expect(await screen.findByRole('button', { name: /Reintentar/ })).toBeTruthy();
+    expect(screen.getByRole('button', { name: rowName('Valencia', 'Sociedad') })).toBeTruthy();
+    expect(screen.queryByRole('heading', { name: 'No pudimos cargar los partidos' })).toBeNull();
   });
 });
 
