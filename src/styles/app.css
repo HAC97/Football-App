@@ -1040,6 +1040,13 @@
   font-size: 14px;
 }
 
+.updated {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-2);
+  font-variant-numeric: tabular-nums;
+}
+
 .skeleton {
   border-radius: var(--radius);
   background: linear-gradient(100deg, var(--surface-2) 30%, var(--surface-3) 50%, var(--surface-2) 70%) 0 0 / 300% 100%;
