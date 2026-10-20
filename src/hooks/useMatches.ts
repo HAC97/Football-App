@@ -22,6 +22,8 @@ export interface MatchesState {
   lastUpdated: number;
   /** Polls in a row that got nothing back; 0 when healthy. */
   pollFailures: number;
+  /** ESPN has answered at least once in this session: what is missing from `matches` is really missing, not just not loaded yet. */
+  confirmed: boolean;
   reload: () => void;
 }
 
@@ -34,6 +36,7 @@ export function useMatches(): MatchesState {
   const [loading, setLoading] = useState(!cached);
   const [attempt, setAttempt] = useState(0);
   const [pollFailures, setPollFailures] = useState(0);
+  const [confirmed, setConfirmed] = useState(false);
   /** When ESPN last confirmed `matches`; the reference time for deciding what can still kick off. */
   const [updatedAt, setUpdatedAt] = useState(() => cached?.savedAt ?? Date.now());
   /** Set by a confirmed answer so the effect below persists it; a cache hydration or a failure never writes. */
@@ -58,6 +61,7 @@ export function useMatches(): MatchesState {
           setMatches((prev) => mergeMatches(prev.filter((m) => res.failed.includes(m.leagueId)), res.matches));
           setMeta((prev) => ({ ...prev, ...res.meta }));
           setUpdatedAt(Date.now());
+          setConfirmed(true);
         }
         setFailed(res.failed);
         setLoading(false);
@@ -129,5 +133,5 @@ export function useMatches(): MatchesState {
     setAttempt((n) => n + 1);
   }, []);
 
-  return { matches, meta, loading, error: !loading && matches.length === 0 && failed.length === leagues.length, failed, hasLive, lastUpdated: updatedAt, pollFailures, reload };
+  return { matches, meta, loading, error: !loading && matches.length === 0 && failed.length === leagues.length, failed, hasLive, lastUpdated: updatedAt, pollFailures, confirmed, reload };
 }

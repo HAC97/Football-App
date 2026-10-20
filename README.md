@@ -26,6 +26,7 @@ npm run dev
 - **Partido destacado**: el que está en vivo; si no hay, el próximo; si no, el último resultado.
 - **Tira de días** (7 atrás, 14 adelante) con punto en los días con partidos y punto rojo si hay uno en vivo. Al abrir, elige hoy o el día más cercano con partidos.
 - **Filtros** por liga y por estado (en vivo, próximos, finalizados). La liga y el tema se recuerdan.
+- **Vista en la URL**: `?liga=pl&dia=2026-10-18&estado=vivo&partido=401234`. Se puede compartir un partido, y el botón Atrás cierra el detalle. Los valores inválidos se ignoran; si la URL no trae liga, se usa la recordada en el dispositivo. Un `partido` que ESPN no devuelve en la ventana cargada se descarta.
 - **Reloj en vivo** que avanza cada segundo entre consultas; consulta solo los partidos de hoy cada 30 s, desde el próximo inicio o mientras haya algo en vivo, y solo con la pestaña visible. Muestra "Actualizado hace X s" mientras hay algo en vivo; si las consultas fallan, reintenta cada vez más espaciado (30 s, 60 s, 2 min, hasta 5 min) y desde el segundo fallo avisa que los datos están desactualizados.
 - **Arranque instantáneo**: la última respuesta de ESPN se guarda en `localStorage` (hasta 2 h) y pinta la primera pantalla mientras se consulta la red. Si la red cae, se sigue viendo lo guardado con su antigüedad real. Nunca se sobrescribe con una respuesta vacía.
 - **Detalle del partido**: resumen con goles, tarjetas y cambios; alineaciones dibujadas en la cancha con suplentes; estadísticas comparadas.

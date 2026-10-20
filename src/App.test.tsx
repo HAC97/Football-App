@@ -42,6 +42,7 @@ beforeEach(() => {
   vi.useFakeTimers({ toFake: ['Date'] });
   vi.setSystemTime(new Date(2026, 9, 17, 12));
   localStorage.clear();
+  window.history.replaceState(null, '', '/');
   api.fetchWindow.mockResolvedValue(loaded([scheduled, finished, tomorrow]));
   api.fetchToday.mockResolvedValue(loaded([]));
   api.fetchStandings.mockResolvedValue([]);
@@ -104,6 +105,131 @@ describe('App: match list', () => {
     expect(screen.queryByRole('button', { name: rowName('Valencia', 'Sociedad') })).toBeNull();
     expect(screen.getByRole('button', { name: rowName('Chelsea', 'Tottenham') })).toBeTruthy();
     expect(localStorage.getItem('fulltime-league')).toBe('pl');
+  });
+});
+
+describe('App: address', () => {
+  const go = (url: string) => window.history.replaceState(null, '', url);
+  const here = () => window.location.pathname + window.location.search;
+  const settle = () => act(async () => new Promise((r) => setTimeout(r, 20)));
+
+  it('opens the view the address describes', async () => {
+    go('/?liga=pl&estado=finalizados');
+    render(<App />);
+    expect(await screen.findByRole('button', { name: rowName('Chelsea', 'Tottenham') })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: rowName('Valencia', 'Sociedad') })).toBeNull();
+    expect(within(screen.getByRole('group', { name: 'Filtrar por estado' })).getByRole('button', { name: /Finalizados/ }).getAttribute('aria-pressed')).toBe('true');
+  });
+
+  it('opens on the day in the address', async () => {
+    go('/?dia=2026-10-18');
+    render(<App />);
+    expect(await screen.findByRole('button', { name: rowName('Getafe', 'Osasuna') })).toBeTruthy();
+  });
+
+  it('ignores a day outside the strip and shows the default day', async () => {
+    go('/?dia=2026-01-01');
+    render(<App />);
+    expect(await screen.findByRole('button', { name: rowName('Valencia', 'Sociedad') })).toBeTruthy();
+  });
+
+  it('writes league, day and status into the address as they change, without piling up history', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await screen.findByRole('button', { name: rowName('Valencia', 'Sociedad') });
+    const entries = window.history.length;
+
+    await user.click(within(screen.getByRole('navigation', { name: 'Ligas' })).getByRole('button', { name: /Premier League/ }));
+    await user.click(screen.getByRole('button', { name: /18 de octubre/ }));
+    await user.click(within(screen.getByRole('group', { name: 'Filtrar por estado' })).getByRole('button', { name: /Próximos/ }));
+
+    expect(here()).toBe('/?liga=pl&dia=2026-10-18&estado=proximos');
+    expect(window.history.length).toBe(entries);
+  });
+
+  it('uses the league remembered on this device and shows it in the address', async () => {
+    localStorage.setItem('fulltime-league', 'pl');
+    render(<App />);
+    expect(await screen.findByRole('button', { name: rowName('Chelsea', 'Tottenham') })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: rowName('Valencia', 'Sociedad') })).toBeNull();
+    expect(here()).toBe('/?liga=pl');
+  });
+
+  it('lets the address win over the remembered league', async () => {
+    localStorage.setItem('fulltime-league', 'pl');
+    go('/?liga=ll');
+    render(<App />);
+    expect(await screen.findByRole('button', { name: rowName('Valencia', 'Sociedad') })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: rowName('Chelsea', 'Tottenham') })).toBeNull();
+  });
+
+  it('opening a match adds a history entry and Back closes it', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await user.click(await screen.findByRole('button', { name: rowName('Valencia', 'Sociedad') }));
+    await screen.findByRole('dialog');
+    expect(here()).toBe('/?partido=s');
+
+    await act(async () => {
+      window.history.back();
+      await new Promise((r) => setTimeout(r, 20));
+    });
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(here()).toBe('/');
+  });
+
+  it('closing with the X steps Back too, so the address is clean afterwards', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await user.click(await screen.findByRole('button', { name: rowName('Valencia', 'Sociedad') }));
+    await user.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Cerrar detalle' }));
+    await settle();
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(here()).toBe('/');
+  });
+
+  it('opens the detail of a shared link once the matches load, and closing it cleans the address', async () => {
+    const user = userEvent.setup();
+    go('/?partido=s');
+    render(<App />);
+    const dialog = await screen.findByRole('dialog');
+    expect(api.fetchSummary).toHaveBeenCalledWith(expect.objectContaining({ id: 's' }), expect.any(AbortSignal));
+
+    await user.click(within(dialog).getByRole('button', { name: 'Cerrar detalle' }));
+    await settle();
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(here()).toBe('/');
+  });
+
+  it('drops a link to a match that does not exist, once ESPN has answered', async () => {
+    go('/?partido=nope');
+    render(<App />);
+    await screen.findByRole('button', { name: rowName('Valencia', 'Sociedad') });
+    await settle();
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(here()).toBe('/');
+  });
+
+  it('does not drop a shared match just because the cached list lacks it: it waits for ESPN', async () => {
+    go('/?partido=n');
+    localStorage.setItem(CACHE_KEY, serializeCache([scheduled], {}, Date.now() - 60_000));
+    let resolve!: (v: ReturnType<typeof loaded>) => void;
+    api.fetchWindow.mockReturnValue(new Promise((r) => (resolve = r)));
+    render(<App />);
+    await settle();
+    expect(here()).toBe('/?partido=n');
+
+    await act(async () => resolve(loaded([scheduled, tomorrow])));
+    expect(await screen.findByRole('dialog')).toBeTruthy();
+  });
+
+  it('keeps a shared match when every league is down (nothing confirms it is gone)', async () => {
+    go('/?partido=n');
+    api.fetchWindow.mockResolvedValue(loaded([], leagues.map((l) => l.id)));
+    render(<App />);
+    await screen.findByRole('heading', { name: 'No pudimos cargar los partidos' });
+    await settle();
+    expect(here()).toBe('/?partido=n');
   });
 });
 

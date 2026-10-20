@@ -11,6 +11,7 @@ import { EmptyDay, ErrorState, MatchesSkeleton } from './components/States';
 import { leagueById, leagues } from './config/leagues';
 import { useMatches } from './hooks/useMatches';
 import { useNow } from './hooks/useNow';
+import { useUrlState } from './hooks/useUrlState';
 import { dayKey, dayWindow, pickDefaultDay } from './lib/date';
 import { filterByStatus, groupByLeague, pickFeatured, type StatusFilter } from './lib/match';
 import { store } from './lib/storage';
@@ -25,23 +26,27 @@ const STATUS_TABS: { id: StatusFilter; label: string }[] = [
   { id: 'FINISHED', label: 'Finalizados' },
 ];
 
+const savedLeague = (): string | null => {
+  const saved = store.get('fulltime-league');
+  return saved && leagueById(saved) ? saved : null;
+};
+
 function App() {
-  const { matches, meta, loading, error, failed, hasLive, lastUpdated, pollFailures, reload } = useMatches();
+  const { matches, meta, loading, error, failed, hasLive, lastUpdated, pollFailures, confirmed, reload } = useMatches();
   const now = useNow(hasLive ? 1000 : 30_000);
   // index.html resolves the theme (saved choice, else system) before React mounts, to avoid a flash.
   const [theme, setTheme] = useState<Theme>(() => (document.documentElement.dataset.theme === 'light' ? 'light' : 'dark'));
-  const [activeLeague, setActiveLeague] = useState<string | null>(() => {
-    const saved = store.get('fulltime-league');
-    return saved && leagueById(saved) ? saved : null;
-  });
+  // League, day, status filter and open match live in the address (shareable, Back closes the detail);
+  // the league remembered on this device only fills in when the address names none.
+  const { state: url, update, openMatch, closeMatch } = useUrlState(savedLeague());
+  const activeLeague = url.liga;
+  const status = url.estado;
+  const openId = url.partido;
   const [standingsPick, setStandingsPick] = useState<string | null>(null);
   // Follows `now`, so a tab left open past midnight moves "Hoy" to the new day.
   const todayKey = dayKey(new Date(now));
   const days = useMemo(() => dayWindow(new Date(`${todayKey}T00:00`)), [todayKey]);
-  const [pickedDay, setSelectedDay] = useState<string | null>(null);
-  const [status, setStatus] = useState<StatusFilter>('ALL');
   const [view, setView] = useState<MobileView>('matches');
-  const [openId, setOpenId] = useState<string | null>(null);
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
@@ -54,11 +59,16 @@ function App() {
     store.set('fulltime-theme', next);
   };
 
-  const selectLeague = useCallback((id: string | null) => {
-    setActiveLeague(id);
-    setStandingsPick(null);
-    store.set('fulltime-league', id);
-  }, []);
+  const selectLeague = useCallback(
+    (id: string | null) => {
+      update({ liga: id });
+      setStandingsPick(null);
+      store.set('fulltime-league', id);
+    },
+    [update],
+  );
+  const setSelectedDay = (key: string) => update({ dia: key });
+  const setStatus = (s: StatusFilter) => update({ estado: s });
 
   const byLeague = useMemo(() => (activeLeague ? matches.filter((m) => m.leagueId === activeLeague) : matches), [matches, activeLeague]);
 
@@ -80,6 +90,8 @@ function App() {
   }, [byLeague]);
 
   const windowKeys = useMemo(() => new Set(days.map(dayKey)), [days]);
+  // A day from the address only counts while it is inside the strip; otherwise fall back to the default day.
+  const pickedDay = url.dia && windowKeys.has(url.dia) ? url.dia : null;
   const selectedDay = pickedDay ?? pickDefaultDay(Object.keys(dayCounts).filter((k) => windowKeys.has(k)), todayKey);
   const ofDay = useMemo(() => byLeague.filter((m) => dayKey(m.date) === selectedDay), [byLeague, selectedDay]);
   const statusCounts = useMemo(
@@ -94,6 +106,12 @@ function App() {
   const opened = openId ? matches.find((m) => m.id === openId) : undefined;
   const openedLeague = opened ? leagueById(opened.leagueId) : undefined;
   const standingsLeague = standingsPick ?? activeLeague ?? featured?.leagueId ?? leagues[0].id;
+
+  // A link to a match that is not in the loaded window (old, wrong id): drop it once we know it is not coming.
+  const unknownMatch = !!openId && confirmed && !opened;
+  useEffect(() => {
+    if (unknownMatch) closeMatch();
+  }, [unknownMatch, closeMatch]);
 
   return (
     <div className="shell" data-view={view}>
@@ -122,7 +140,7 @@ function App() {
 
             <UpdateStatus lastUpdated={lastUpdated} failures={pollFailures} live={hasLive} now={now} />
 
-            {featured && featuredLeague && <FeaturedMatch match={featured} league={featuredLeague} now={now} onOpen={(m) => setOpenId(m.id)} />}
+            {featured && featuredLeague && <FeaturedMatch match={featured} league={featuredLeague} now={now} onOpen={(m) => openMatch(m.id)} />}
 
             <div className="toolbar">
               <DayStrip days={days} selected={selectedDay} onSelect={setSelectedDay} counts={dayCounts} />
@@ -140,7 +158,7 @@ function App() {
               {groups.length === 0 ? (
                 <EmptyDay filtered={statusCounts.ALL > 0} isToday={selectedDay === todayKey} onToday={() => setSelectedDay(todayKey)} />
               ) : (
-                groups.map((g) => <LeagueGroup key={g.league.id} group={g} meta={meta[g.league.id]} now={now} onOpen={(m) => setOpenId(m.id)} />)
+                groups.map((g) => <LeagueGroup key={g.league.id} group={g} meta={meta[g.league.id]} now={now} onOpen={(m) => openMatch(m.id)} />)
               )}
             </div>
           </>
@@ -162,7 +180,7 @@ function App() {
         </button>
       </nav>
 
-      {opened && openedLeague && <MatchModal key={opened.id} match={opened} league={openedLeague} meta={meta[openedLeague.id]} now={now} onClose={() => setOpenId(null)} />}
+      {opened && openedLeague && <MatchModal key={opened.id} match={opened} league={openedLeague} meta={meta[openedLeague.id]} now={now} onClose={closeMatch} />}
     </div>
   );
 }
