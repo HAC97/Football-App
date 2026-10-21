@@ -6,7 +6,7 @@ export default defineConfig({
   plugins: [react()],
   test: {
     // Gate tests: deterministic, offline, fast. Live-API evals live in vitest.eval.config.ts.
-    include: ['src/**/*.test.{ts,tsx}'],
+    include: ['src/**/*.test.{ts,tsx}', 'scripts/**/*.test.ts'],
     setupFiles: ['src/test/setup-dom.ts'],
     environment: 'node',
   },
