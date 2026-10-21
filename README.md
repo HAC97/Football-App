@@ -1,7 +1,7 @@
 # Fulltime
 
 Resultados, partidos en vivo, alineaciones, estadísticas y tablas de posiciones de seis competencias:
-Liga Profesional (Argentina), Premier League, Serie A, LaLiga, Copa Libertadores y Champions League.
+Liga Profesional (Argentina), Premier League, Serie A, LaLiga, Copa Libertadores, Copa Sudamericana y Champions League.
 Los datos vienen de la API pública de ESPN, sin clave ni backend.
 
 React 19 + TypeScript + Vite. Sin librería de UI: CSS propio con tokens (tema oscuro y claro).

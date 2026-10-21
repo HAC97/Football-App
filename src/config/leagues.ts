@@ -6,6 +6,7 @@ export const leagues: League[] = [
   { id: 'sa', name: 'Serie A', country: 'Italia', espnSlug: 'ita.1', glyph: 'SA', color: '#2F7BE0' },
   { id: 'll', name: 'LaLiga', country: 'España', espnSlug: 'esp.1', glyph: 'LL', color: '#F0524B' },
   { id: 'lib', name: 'Copa Libertadores', country: 'Sudamérica', espnSlug: 'conmebol.libertadores', glyph: 'CL', color: '#C9A13B' },
+  { id: 'sud', name: 'Copa Sudamericana', country: 'Sudamérica', espnSlug: 'conmebol.sudamericana', glyph: 'CS', color: '#2E9E6B' },
   { id: 'ucl', name: 'Champions League', country: 'Europa', espnSlug: 'uefa.champions', glyph: 'UC', color: '#3D6BFF' },
 ];
 

@@ -121,11 +121,19 @@ export function normalizeStandings(raw: RawStandings): StandingsGroup[] {
 export function translateZone(description: string): string {
   const d = description.trim();
   if (/^relegation play-?off/i.test(d)) return 'Promoción por el descenso';
-  if (/^relegation/i.test(d)) return 'Descenso';
+  if (/^relegat(ion|ed)/i.test(d)) return 'Descenso';
   if (/^promotion/i.test(d)) return 'Ascenso';
   if (/^qualifies? for (the )?round of 16/i.test(d)) return 'Clasifica a octavos de final';
-  if (/^qualifies? for (the )?(knockout( round)? )?play-?offs?/i.test(d)) return 'Clasifica al playoff';
+  // "Knockout Round Play-offs" (Champions League) and "KO Playoffs" (Sudamericana) are the same stage.
+  if (/^qualifies? for (the )?((knockout( round)?|ko) )?play-?offs?/i.test(d)) return 'Clasifica al playoff';
+  // "Qualifies for Sudamericana KO Playoffs": the cup a team drops into (Libertadores third place).
+  const dropsInto = /^qualifies? for (?:the )?(.+?) (?:ko|knockout(?: round)?) play-?offs?$/i.exec(d);
+  if (dropsInto) return `Clasifica al playoff de ${dropsInto[1]}`;
+  const seeding = /^knockout phase play-?offs?\s*-\s*(un)?seeded$/i.exec(d);
+  if (seeding) return seeding[1] ? 'Playoff (sin cabeza de serie)' : 'Playoff (cabeza de serie)';
   if (/^(eliminated|out)/i.test(d)) return 'Eliminado';
+  const qualifying = /^(.+) qualifying$/i.exec(d);
+  if (qualifying) return `Clasificatoria de ${qualifying[1]}`;
   if (/^qualifies? for (the )?(.+)/i.test(d)) return `Clasifica a ${d.replace(/^qualifies? for (the )?/i, '')}`;
   return d;
 }
