@@ -121,6 +121,29 @@ describe('App: address', () => {
     expect(within(screen.getByRole('group', { name: 'Filtrar por estado' })).getByRole('button', { name: /Finalizados/ }).getAttribute('aria-pressed')).toBe('true');
   });
 
+  it('lists Copa Sudamericana in the nav, groups its matches under it and filters by ?liga=sud', async () => {
+    const sud = makeMatch({ id: 'sud1', leagueId: 'sud', espnSlug: 'conmebol.sudamericana', date: at(0, 20), homeTeam: team('b', 'Boca'), awayTeam: team('v', 'Vasco') });
+    api.fetchWindow.mockResolvedValue(loaded([scheduled, sud]));
+    const user = userEvent.setup();
+    render(<App />);
+
+    expect(await screen.findByRole('heading', { name: 'Copa Sudamericana' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: rowName('Boca', 'Vasco') })).toBeTruthy();
+
+    await user.click(within(screen.getByRole('navigation', { name: 'Ligas' })).getByRole('button', { name: /Copa Sudamericana/ }));
+    expect(here()).toBe('/?liga=sud');
+    expect(screen.queryByRole('button', { name: rowName('Valencia', 'Sociedad') })).toBeNull();
+    expect(screen.getByRole('button', { name: rowName('Boca', 'Vasco') })).toBeTruthy();
+  });
+
+  it('opens straight on Copa Sudamericana from the address', async () => {
+    go('/?liga=sud');
+    api.fetchWindow.mockResolvedValue(loaded([scheduled, makeMatch({ id: 'sud1', leagueId: 'sud', date: at(0, 20), homeTeam: team('b', 'Boca'), awayTeam: team('v', 'Vasco') })]));
+    render(<App />);
+    expect(await screen.findByRole('button', { name: rowName('Boca', 'Vasco') })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: rowName('Valencia', 'Sociedad') })).toBeNull();
+  });
+
   it('opens on the day in the address', async () => {
     go('/?dia=2026-10-18');
     render(<App />);

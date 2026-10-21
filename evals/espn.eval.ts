@@ -49,6 +49,20 @@ describe('ESPN contract', () => {
     expect(withTable).toBeGreaterThanOrEqual(5);
   });
 
+  it('translates every qualification label ESPN sends for every league (no English left on screen)', async () => {
+    const untranslated: string[] = [];
+    for (const league of leagues) {
+      for (const g of await fetchStandings(league)) {
+        for (const e of g.entries) {
+          const d = e.zone?.description;
+          // English stems only: the Spanish output ("Clasifica al playoff", "Descenso") must not trip it.
+          if (d && /\b(qualif\w*|relegat\w*|promot\w*|knockout|ko|round of|playoffs|play-offs|seeded|unseeded)\b/i.test(d)) untranslated.push(`${league.id}: ${d}`);
+        }
+      }
+    }
+    expect([...new Set(untranslated)]).toEqual([]);
+  });
+
   it('summary endpoint yields stats, events and lineups for at least 80% of sampled finished matches', async () => {
     const res = await fetchWindow(leagues, monthAgo, today);
     const finished = res.matches.filter((m: Match) => m.status === 'FINISHED' && m.statusName === 'STATUS_FULL_TIME');
