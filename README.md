@@ -61,4 +61,6 @@ evals/espn.eval.ts      contrato contra la API real
 npm run lint && npm test && npm run build && npm run eval
 ```
 
+**Pre-commit**: `npm install` activa el hook de `.githooks/` (vía `core.hooksPath`). En cada commit corre, según los archivos en stage: ESLint sobre los `.ts/.tsx` (sin avisos), `tsc -b`, y los tests relacionados con ellos (la suite completa si cambia `package.json`, `vite.config.ts`, los `tsconfig`, `eslint.config.js`, `src/test/` o `scripts/`). Tarda unos 6 s con código y casi nada con solo documentos. Si falla, arregla el problema; no uses `--no-verify`. El hook revisa el árbol de trabajo, no el contenido exacto del índice, así que un `git add -p` parcial puede colar código sin revisar.
+
 CI (`.github/workflows/ci.yml`): en cada PR y push a `main` corre `lint`, `test` y `build`. Los evals contra ESPN corren cada noche (03:00 UTC) y a mano desde la pestaña Actions; no bloquean PRs porque dependen de la red.
